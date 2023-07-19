@@ -1,23 +1,39 @@
 [Global_Params]
-data_url="http://drugcell.ucsd.edu/downloads/"
-original_data="data.tgz"
+
+model_name='PathDSP'
+data_url='https://zenodo.org/record/6093818/files/'
+improve_data_url='https://ftp.mcs.anl.gov/pub/candle/public/improve/benchmarks/single_drug_drp/benchmark-data-pilot1/csa_data/'
+original_data_url='https://zenodo.org/record/7532963/'
+original_data='input.zip'
+gene_set = 'MSigdb.zip'
+ppi_data = 'STRING.zip'
+drug_target = 'raw_data.zip'
+train_data = 'PathDSP_train.txt'
+test_data = 'PathDSP_test.txt'
+val_data = 'PathDSP_val.txt'
+drug_bits_file='drug_mbit_df.txt'
+dgnet_file='DGnet.txt'
+mutnet_file='MUTnet.txt'
+cnvnet_file='CNVnet.txt'
+exp_file='EXP.txt'
+final_input_file='input.txt'
+output='Result/'
+bit_int=128
+permutation_int=100
+seed_int=42
+cpu_int=20
+
+#Model parameter
+metric='auc1'
+data_type='CCLE'
 CUDA_ID = 0
-load = "drugcell_v1.pt"
-train_data = "../data/drugcell_train.txt"
-test_data = "../data/drugcell_test.txt"
-val_data = "../data/drugcell_val.txt"
-onto = "drugcell_ont.txt"
 learning_rate = 0.001
 batch_size = 1000
+eps=0.00001
 genotype_hiddens = 6
 drug_hiddens='100,50,6'
 final_hiddens=6
-genotype="cell2mutation.txt"
-fingerprint='drug2fingerprint.txt'
-cell2id='../data/cell2ind.txt'
-drug2id='../data/drug2ind.txt'
-output_dir = "MODEL"
 epochs=200
-optimizer = "adam"
-loss = "mse"
-predict="drugcell_all.txt"
+optimizer = 'adam'
+loss = 'mse'
+improve_analysis='no'
