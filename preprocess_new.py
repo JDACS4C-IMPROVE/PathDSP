@@ -28,6 +28,9 @@ from datetime import datetime
 # import NetPEA modules
 import RWR as rwr
 import NetPEA as pea
+#import gsea module
+import gseapy as gp
+
 
 
 
@@ -289,6 +292,46 @@ def prep_input(params):
     comb_data_mtx = comb_data_mtx.set_index(['drug_id', 'sample_id']).join(drug_data, on = 'drug_id').join(sample_data, on = 'sample_id').reset_index()
     comb_data_mtx['response'] = response_df[params['metric']]
     comb_data_mtx.to_csv(params['final_input_file'], sep = '\t', header= True, index=False)
+
+def run_ssgsea(params):
+    expMat = improve_utils.load_gene_expression_data(sep='\t')
+    gct = expMat.T # gene (rows) cell lines (columns)
+    pathway_path = params['data_dir'] + '/MSigdb/union.c2.cp.pid.reactome.v7.2.symbols.gmt'
+    gmt = pathway_path
+    tmp_str = '/ssgsea/'
+
+    if not os.path.isdir(tmp_str):
+        os.mkdir(tmp_str) 
+
+    # run enrichment
+    ssgsea = gp.ssgsea(data=gct,  #gct: a matrix of gene by sample
+                           gene_sets=gmt, #gmt format
+                           outdir=tmp_str,
+                           scale=True,
+                           permutation_num=2, #1000
+                           no_plot=True,
+                           processes=10,
+                           #min_size=0,
+                           format='png')
+
+    result_mat = ssgsea.res2d.T # get the normalized enrichment score (i.e., NES)
+    result_mat.to_csv(tmp_str+'ssGSEA.txt', header=True, index=True, sep="\t")
+
+    f = open(tmp_str+'ssGSEA.txt', 'r')
+    lines = f.readlines()
+    total_dict = {}
+    for cell in set(lines[1].split()):
+        total_dict[cell] = {}
+    cell_lines = lines[1].split()
+    vals = lines[4].split()
+    for i, pathway in enumerate((lines[2].split())):
+        if i > 0:
+            total_dict[cell_lines[i]][pathway] = float(vals[i])
+
+    df = pd.DataFrame(total_dict)
+
+    df.to_csv(params['data_dir'] + '/' + 'exp_file')
+
 
 def candle_main(anl):
     params = initialize_parameters()
