@@ -317,6 +317,21 @@ def run_ssgsea(params):
     result_mat = ssgsea.res2d.T # get the normalized enrichment score (i.e., NES)
     result_mat.to_csv(tmp_str+'ssGSEA.txt', header=True, index=True, sep="\t")
 
+    f = open(tmp_str+'ssGSEA.txt', 'r')
+    lines = f.readlines()
+    total_dict = {}
+    for cell in set(lines[1].split()):
+        total_dict[cell] = {}
+    cell_lines = lines[1].split()
+    vals = lines[4].split()
+    for i, pathway in enumerate((lines[2].split())):
+        if i > 0:
+            total_dict[cell_lines[i]][pathway] = float(vals[i])
+
+    df = pd.DataFrame(total_dict)
+
+    df.to_csv(params['data_dir'] + '/' + 'exp_file')
+
 
 def candle_main(anl):
     params = initialize_parameters()
