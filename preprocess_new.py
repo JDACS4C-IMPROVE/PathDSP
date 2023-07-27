@@ -298,7 +298,7 @@ def run_ssgsea(params):
     gct = expMat.T # gene (rows) cell lines (columns)
     pathway_path = params['data_dir'] + '/MSigdb/union.c2.cp.pid.reactome.v7.2.symbols.gmt'
     gmt = pathway_path
-    tmp_str = '/ssgsea/'
+    tmp_str = params['data_dir']
 
     if not os.path.isdir(tmp_str):
         os.mkdir(tmp_str) 
@@ -330,7 +330,7 @@ def run_ssgsea(params):
 
     df = pd.DataFrame(total_dict)
 
-    df.to_csv(params['data_dir'] + '/' + 'exp_file')
+    df.to_csv(params['exp_file'])
 
 
 def candle_main(anl):
