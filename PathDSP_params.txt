@@ -16,10 +16,12 @@ dgnet_file='DGnet.txt'
 mutnet_file='MUTnet.txt'
 cnvnet_file='CNVnet.txt'
 exp_file='EXP.txt'
-final_input_file='input.txt'
 output='Result/'
 bit_int=128
 permutation_int=100
+metric='auc1'
+data_type='CCLE'
+split=0
 
 
 #Model parameter
@@ -27,8 +29,6 @@ seed_int=42
 cpu_int=20
 cv_int=1
 gpu_int=0
-metric='auc1'
-data_type='CCLE'
 learning_rate = 0.001
 batch_size = 12
 eps=0.00001

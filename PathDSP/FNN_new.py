@@ -148,15 +148,16 @@ def predict(net, test_dl, device):
 def main(params):
     start_time = datetime.now()
     # load data
-    df = pd.read_csv(params.final_input_file, header=0, index_col=[0,1], sep="\t")
-
+    train_df = pd.read_csv(params['train_data'], header=0, index_col=[0,1], sep="\t")
+    val_df = pd.read_csv(params['val_data'], header=0, index_col=[0,1], sep="\t")
+    
     # shuffle
-    sdf = skut.shuffle(df, random_state=params.seed_int)
+    sdf = skut.shuffle(df, random_state=params["seed_int"])
 
     # set parameters
-    myutil.set_seed(params.seed_int)
-    device = myutil.get_device(uth=params.gpu_int)
-    kFold = params.cv_int
+    myutil.set_seed(params["seed_int"])
+    device = myutil.get_device(uth=params["gpu_int"])
+    kFold = params["cv_int"]
     learning_rate = params['learning_rate']
     epoch = params['epochs']
     batch_size = params['batch_size']

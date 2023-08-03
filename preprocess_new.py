@@ -268,7 +268,7 @@ def prep_input(params):
     MUTnet = MUTnet.add_suffix('_mutnet').reset_index().rename(columns={'index': 'sample_id'})
     EXP = pd.read_csv(params['exp_file'], sep = '\t', index_col=0)
     EXP = EXP.add_suffix('_exp').reset_index().rename(columns={'index': 'sample_id'})
-    response_df = improve_utils.load_single_drug_response_data(source=params['data_type'], split=0,
+    response_df = improve_utils.load_single_drug_response_data(source=params['data_type'], split=params['split'],
                                                             split_type=['train', 'test', 'val'],
                                                             y_col_name= params['metric'])
     response_df = response_df.rename(columns={'improve_chem_id': 'drug_id', 'improve_sample_id': 'sample_id'})
@@ -278,7 +278,6 @@ def prep_input(params):
     common_sample_ids = reduce(np.intersect1d, (CNVnet['sample_id'], MUTnet['sample_id'], EXP['sample_id'] , response_df['sample_id']))
     response_df = response_df.loc[(response_df['drug_id'].isin(common_drug_ids)) & 
                             (response_df['sample_id'].isin(common_sample_ids)), :]
-
     drug_mbit_df = drug_mbit_df.loc[drug_mbit_df['drug_id'].isin(common_drug_ids), :].set_index('drug_id').sort_index()
     DGnet = DGnet.loc[DGnet['drug_id'].isin(common_drug_ids), :].set_index('drug_id').sort_index()
     CNVnet = CNVnet.loc[CNVnet['sample_id'].isin(common_sample_ids), :].set_index('sample_id').sort_index()
@@ -287,11 +286,20 @@ def prep_input(params):
     
     drug_data = drug_mbit_df.join(DGnet)
     sample_data = CNVnet.join([MUTnet, EXP])
-    comb_data_mtx = pd.DataFrame({'drug_id': response_df['drug_id'].values, 
-                               'sample_id': response_df['sample_id'].values})
-    comb_data_mtx = comb_data_mtx.set_index(['drug_id', 'sample_id']).join(drug_data, on = 'drug_id').join(sample_data, on = 'sample_id').reset_index()
-    comb_data_mtx['response'] = response_df[params['metric']]
-    comb_data_mtx.to_csv(params['final_input_file'], sep = '\t', header= True, index=False)
+    ## export train,val,test set
+    for i in ['train', 'test', 'val']:
+        response_df = improve_utils.load_single_drug_response_data(source=params['data_type'], split=params['split'],
+                                                            split_type=i,
+                                                            y_col_name= params['metric'])
+        response_df = response_df.rename(columns={'improve_chem_id': 'drug_id', 'improve_sample_id': 'sample_id'})
+        response_df = response_df.loc[(response_df['drug_id'].isin(common_drug_ids)) & 
+                        (response_df['sample_id'].isin(common_sample_ids)), :]
+        comb_data_mtx = pd.DataFrame({'drug_id': response_df['drug_id'].values, 
+                            'sample_id': response_df['sample_id'].values})
+        comb_data_mtx = comb_data_mtx.set_index(['drug_id', 'sample_id']).join(drug_data, on = 'drug_id').join(sample_data, on = 'sample_id')
+        comb_data_mtx['response'] = response_df[params['metric']]
+        comb_data_mtx.to_csv(params[i + '_data'], sep = '\t', header= True, index=False)
+
 
 def run_ssgsea(params):
     expMat = improve_utils.load_gene_expression_data(sep='\t')
