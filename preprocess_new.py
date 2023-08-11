@@ -41,7 +41,7 @@ required = None
 additional_definitions = None
 
 # This should be set outside as a user environment variable
-os.environ['CANDLE_DATA_DIR'] = os.environ['HOME'] + '/improve_data_dir/'
+#os.environ['CANDLE_DATA_DIR'] = os.environ['HOME'] + '/improve_data_dir/'
 
 # initialize class
 class PathDSP_candle(candle.Benchmark):
