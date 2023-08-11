@@ -2,7 +2,7 @@
 
 model_name='PathDSP'
 data_url='https://zenodo.org/record/6093818/files/'
-improve_data_url='https://ftp.mcs.anl.gov/pub/candle/public/improve/benchmarks/single_drug_drp/benchmark-data-pilot1/csa_data/'
+improve_data_url='https://ftp.mcs.anl.gov/pub/candle/public/improve/benchmarks/single_drug_drp/benchmark-data-pilot1/csa_data/raw_data/'
 original_data_url='https://zenodo.org/record/7532963/files/'
 original_data='input.zip'
 gene_set = 'MSigdb.zip'
