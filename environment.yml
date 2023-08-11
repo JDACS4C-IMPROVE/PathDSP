@@ -1,5 +1,6 @@
 name: PathDSP_env
 channels:
+  - bioconda
   - pytorch
   - conda-forge
   - defaults
@@ -27,9 +28,9 @@ dependencies:
   - brotli-bin=1.0.9
   - brotlipy=0.7.0
   - bzip2=1.0.8
-  - ca-certificates=2023.5.7
+  - ca-certificates=2023.05.30
   - cairo=1.16.0
-  - certifi=2023.5.7
+  - certifi=2023.7.22
   - cffi=1.15.1
   - charset-normalizer=2.0.4
   - cloudpickle=2.2.1
@@ -58,6 +59,7 @@ dependencies:
   - gmpy2=2.1.2
   - gnutls=3.6.15
   - greenlet=2.0.2
+  - gseapy=1.0.5
   - icu=72.1
   - idna=3.4
   - importlib-metadata=6.6.0
@@ -141,7 +143,7 @@ dependencies:
   - numexpr=2.8.4
   - numpy=1.21.6
   - openh264=2.1.1
-  - openssl=1.1.1t
+  - openssl=1.1.1v
   - packaging=23.0
   - pandas=1.5.3
   - pandocfilters=1.5.0
@@ -227,4 +229,3 @@ dependencies:
   - zipp=3.15.0
   - zlib=1.2.13
   - zstd=1.5.5
-prefix: /homes/ac.liu.yuanhang/miniconda3/envs/improve_env

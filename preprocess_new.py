@@ -107,8 +107,8 @@ def download_anl_data(params):
         mkdir(y_data_dir)
         mkdir(supplementary_folder)
 
-    for improve_file in ['CCLE_all.txt', 'CCLE_split_0_test.txt',
-                         'CCLE_split_0_train.txt', 'CCLE_split_0_val.txt']:
+    for improve_file in ['CCLE_all.txt', 'CCLE_split_' + str(params['split']) + '_test.txt',
+                         'CCLE_split_' + str(params['split']) + '_train.txt', 'CCLE_split_' + str(params['split']) + '_val.txt']:
         url_dir = params['improve_data_url'] + '/splits/' 
         candle.file_utils.get_file(improve_file, url_dir + improve_file,
                                    datadir=splits_dir,
@@ -131,6 +131,8 @@ def download_anl_data(params):
         candle.file_utils.get_file(db_file, params['data_url'] + '/' +db_file,
                                    datadir=params['data_dir'],
                                    cache_subdir=None)
+        
+
     
     
 # set timer
