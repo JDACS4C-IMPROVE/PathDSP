@@ -53,6 +53,7 @@ echo "using CANDLE_CONFIG ${CANDLE_CONFIG}"
 
 # Set up environmental variables and execute model
 echo "activating environment"
-/opt/conda/bin/conda activate PathDSP_env
+#source /opt/conda/etc/profile.d/conda.sh
+source activate /usr/local/conda_envs/PathDSP_env
 echo "running command ${CMD}"
 CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES} CANDLE_DATA_DIR=${CANDLE_DATA_DIR} $CMD
