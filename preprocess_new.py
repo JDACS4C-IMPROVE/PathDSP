@@ -94,7 +94,7 @@ def preprocess(params, data_dir):
     return(params)
 
 def download_anl_data(params):
-    csa_data_folder = os.path.join(os.environ['CANDLE_DATA_DIR'] + params['model_name'], 'csa_data', 'raw_data')
+    csa_data_folder = os.path.join(os.environ['CANDLE_DATA_DIR'], params['model_name'], 'csa_data', 'raw_data')
     splits_dir = os.path.join(csa_data_folder, 'splits') 
     x_data_dir = os.path.join(csa_data_folder, 'x_data')
     y_data_dir = os.path.join(csa_data_folder, 'y_data')
@@ -105,7 +105,6 @@ def download_anl_data(params):
         mkdir(splits_dir)
         mkdir(x_data_dir)
         mkdir(y_data_dir)
-        mkdir(supplementary_folder)
 
     for improve_file in ['CCLE_all.txt', 'CCLE_split_' + str(params['split']) + '_test.txt',
                          'CCLE_split_' + str(params['split']) + '_train.txt', 'CCLE_split_' + str(params['split']) + '_val.txt']:
@@ -345,7 +344,7 @@ def run_ssgsea(params):
 
 def candle_main(anl):
     params = initialize_parameters()
-    data_dir = os.environ['CANDLE_DATA_DIR'] + params['model_name'] + '/Data/'
+    data_dir = os.environ['CANDLE_DATA_DIR'] + '/' + params['model_name'] + '/Data/'
     params =  preprocess(params, data_dir)
     if params['improve_analysis'] == 'yes' or anl:
         download_anl_data(params)
