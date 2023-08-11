@@ -145,7 +145,7 @@ def cal_time(end, start):
 
 
 def download_author_data(params):
-    data_download_filepath = candle.get_file(params['original_data'], params['original_data_url'],
+    data_download_filepath = candle.get_file(params['original_data'], params['original_data_url'] + '/' + params['original_data'],
                                              datadir = params['data_dir'],
                                              cache_subdir = None)
     print('download_path: {}'.format(data_download_filepath))
