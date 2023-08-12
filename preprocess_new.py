@@ -94,7 +94,7 @@ def preprocess(params, data_dir):
     return(params)
 
 def download_anl_data(params):
-    csa_data_folder = os.path.join(os.environ['CANDLE_DATA_DIR'], params['model_name'], 'csa_data', 'raw_data')
+    csa_data_folder = os.path.join(os.environ['CANDLE_DATA_DIR'], 'csa_data', 'raw_data')
     splits_dir = os.path.join(csa_data_folder, 'splits') 
     x_data_dir = os.path.join(csa_data_folder, 'x_data')
     y_data_dir = os.path.join(csa_data_folder, 'y_data')
@@ -223,7 +223,7 @@ def run_netpea(params, dtype, multiply_expression):
     permutation_int = params['permutation_int']
     seed_int = params['seed_int']
     cpu_int = params['cpu_int']
-    csa_data_folder = os.path.join(os.environ['CANDLE_DATA_DIR'] + params['model_name'], 'csa_data', 'raw_data')
+    csa_data_folder = os.path.join(os.environ['CANDLE_DATA_DIR'], 'csa_data', 'raw_data')
     rs_all = improve_utils.load_single_drug_response_data(source=params['data_type'],
                                                         split=params['split'], split_type=["train", "test", "val"],
                                                         y_col_name=params['metric'])
@@ -356,7 +356,7 @@ def run_ssgsea(params):
 
 def candle_main(anl):
     params = initialize_parameters()
-    data_dir = os.environ['CANDLE_DATA_DIR'] + '/' + params['model_name'] + '/Data/'
+    data_dir = os.environ['CANDLE_DATA_DIR'] + '/' + '/Data/'
     params =  preprocess(params, data_dir)
     if params['improve_analysis'] == 'yes' or anl:
         download_anl_data(params)
