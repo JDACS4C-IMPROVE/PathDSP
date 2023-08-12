@@ -153,9 +153,13 @@ def download_author_data(params):
 
 def smile2bits(params):
     start = datetime.now()
+    rs_all = improve_utils.load_single_drug_response_data(source=params['source'],
+                                                         split=params['split'], split_type=["train", "test", "val"],
+                                                         y_col_name=params['metric'])
     smile_df = improve_utils.load_smiles_data()
     smile_df.columns = ['drug', 'smile']
     smile_df = smile_df.drop_duplicates(subset=['drug'], keep='first').set_index('drug')
+    smile_df = smile_df.loc[smile_df.index.isin(rs_all['improve_chem_id']),]
     bit_int = params['bit_int']
     record_list = []
     # smile2bits drug by drug
@@ -220,12 +224,16 @@ def run_netpea(params, dtype, multiply_expression):
     seed_int = params['seed_int']
     cpu_int = params['cpu_int']
     csa_data_folder = os.path.join(os.environ['CANDLE_DATA_DIR'] + params['model_name'], 'csa_data', 'raw_data')
+    rs_all = improve_utils.load_single_drug_response_data(source=params['source'],
+                                                        split=params['split'], split_type=["train", "test", "val"],
+                                                        y_col_name=params['metric'])
     if dtype == 'DGnet':
         drug_info = pd.read_csv(csa_data_folder + '/x_data/drug_info.tsv', sep='\t')
         drug_info['NAME'] = drug_info['NAME'].str.upper()
         target_info = pd.read_csv(params['data_dir'] + '/raw_data/DB.Drug.Target.txt', sep = '\t')
         target_info = target_info.rename(columns={'drug': 'NAME'})
         combined_df = pd.merge(drug_info, target_info, how = 'left', on = 'NAME').dropna(subset=['gene'])
+        combined_df = combined_df.loc[combined_df['improve_chem_id'].isin(rs_all['improve_chem_id']),]
         restart_path = params['data_dir'] + '/drug_target.txt'
         combined_df.iloc[:,-2:].to_csv(restart_path, sep = '\t', header= True, index=False)
         outpath = params['dgnet_file']
@@ -233,6 +241,7 @@ def run_netpea(params, dtype, multiply_expression):
         mutation_data = improve_utils.load_mutation_count_data(gene_system_identifier='Gene_Symbol')
         mutation_data = mutation_data.reset_index()
         mutation_data = pd.melt(mutation_data, id_vars='improve_sample_id').loc[lambda x: x['value'] > 0]
+        mutation_data = mutation_data.loc[mutation_data['improve_sample_id'].isin(rs_all['improve_sample_id']),]
         restart_path = params['data_dir'] + '/mutation_data.txt'
         mutation_data.iloc[:,0:2].to_csv(restart_path, sep = '\t', header= True, index=False)
         outpath = params['mutnet_file']
@@ -240,6 +249,7 @@ def run_netpea(params, dtype, multiply_expression):
         cnv_data = improve_utils.load_discretized_copy_number_data(gene_system_identifier='Gene_Symbol')
         cnv_data = cnv_data.reset_index()
         cnv_data = pd.melt(cnv_data, id_vars='improve_sample_id').loc[lambda x: x['value'] != 0]
+        cnv_data = cnv_data.loc[cnv_data['improve_sample_id'].isin(rs_all['improve_sample_id']),]
         restart_path = params['data_dir'] + '/cnv_data.txt'
         cnv_data.iloc[:,0:2].to_csv(restart_path, sep = '\t', header= True, index=False)
         outpath = params['mutnet_file']
@@ -304,6 +314,10 @@ def prep_input(params):
 
 def run_ssgsea(params):
     expMat = improve_utils.load_gene_expression_data(sep='\t')
+    rs_all = improve_utils.load_single_drug_response_data(source=params['source'],
+                                                        split=params['split'], split_type=["train", "test", "val"],
+                                                        y_col_name=params['metric'])
+    expMat = expMat.loc[expMat.index.isin(rs_all['improve_sample_id']),]
     gct = expMat.T # gene (rows) cell lines (columns)
     pathway_path = params['data_dir'] + '/MSigdb/union.c2.cp.pid.reactome.v7.2.symbols.gmt'
     gmt = pathway_path
@@ -317,9 +331,9 @@ def run_ssgsea(params):
                            gene_sets=gmt, #gmt format
                            outdir=tmp_str,
                            scale=True,
-                           permutation_num=2, #1000
+                           permutation_num=0, #1000
                            no_plot=True,
-                           processes=10,
+                           processes=params['cpu_int'],
                            #min_size=0,
                            format='png')
 
@@ -336,10 +350,8 @@ def run_ssgsea(params):
     for i, pathway in enumerate((lines[2].split())):
         if i > 0:
             total_dict[cell_lines[i]][pathway] = float(vals[i])
-
     df = pd.DataFrame(total_dict)
-
-    df.to_csv(params['exp_file'])
+    df.T.to_csv(params['exp_file'], header=True, index=True, sep="\t")
 
 
 def candle_main(anl):
