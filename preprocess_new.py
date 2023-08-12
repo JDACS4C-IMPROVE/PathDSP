@@ -153,7 +153,7 @@ def download_author_data(params):
 
 def smile2bits(params):
     start = datetime.now()
-    rs_all = improve_utils.load_single_drug_response_data(source=params['source'],
+    rs_all = improve_utils.load_single_drug_response_data(source=params['data_type'],
                                                          split=params['split'], split_type=["train", "test", "val"],
                                                          y_col_name=params['metric'])
     smile_df = improve_utils.load_smiles_data()
@@ -224,7 +224,7 @@ def run_netpea(params, dtype, multiply_expression):
     seed_int = params['seed_int']
     cpu_int = params['cpu_int']
     csa_data_folder = os.path.join(os.environ['CANDLE_DATA_DIR'] + params['model_name'], 'csa_data', 'raw_data')
-    rs_all = improve_utils.load_single_drug_response_data(source=params['source'],
+    rs_all = improve_utils.load_single_drug_response_data(source=params['data_type'],
                                                         split=params['split'], split_type=["train", "test", "val"],
                                                         y_col_name=params['metric'])
     if dtype == 'DGnet':
@@ -314,7 +314,7 @@ def prep_input(params):
 
 def run_ssgsea(params):
     expMat = improve_utils.load_gene_expression_data(sep='\t')
-    rs_all = improve_utils.load_single_drug_response_data(source=params['source'],
+    rs_all = improve_utils.load_single_drug_response_data(source=params['data_type'],
                                                         split=params['split'], split_type=["train", "test", "val"],
                                                         y_col_name=params['metric'])
     expMat = expMat.loc[expMat.index.isin(rs_all['improve_sample_id']),]
