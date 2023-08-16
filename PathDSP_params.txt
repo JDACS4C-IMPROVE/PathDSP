@@ -25,9 +25,9 @@ split=0
 
 
 #Model parameter
-seed_int=42
+#seed_int=42
 cpu_int=20
-cv_int=1
+#cv_int=1
 gpu_int=0
 learning_rate = 0.001
 batch_size = 12
