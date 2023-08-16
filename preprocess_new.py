@@ -380,4 +380,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('-a', dest='anl',  default=False)
     args = parser.parse_args()
+    start = datetime.now()
     candle_main(args.anl)
+    print('[Finished in {:}]'.format(cal_time(datetime.now(), start)))
