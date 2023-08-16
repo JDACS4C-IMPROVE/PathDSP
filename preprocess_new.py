@@ -230,7 +230,7 @@ def run_netpea(params, dtype, multiply_expression):
     if dtype == 'DGnet':
         drug_info = pd.read_csv(csa_data_folder + '/x_data/drug_info.tsv', sep='\t')
         drug_info['NAME'] = drug_info['NAME'].str.upper()
-        target_info = pd.read_csv(params['data_dir'] + '/raw_data/DB.Drug.Target.txt', sep = '\t')
+        target_info = pd.read_csv(params['data_dir'] + '/data/DB.Drug.Target.txt', sep = '\t')
         target_info = target_info.rename(columns={'drug': 'NAME'})
         combined_df = pd.merge(drug_info, target_info, how = 'left', on = 'NAME').dropna(subset=['gene'])
         combined_df = combined_df.loc[combined_df['improve_chem_id'].isin(rs_all['improve_chem_id']),]
