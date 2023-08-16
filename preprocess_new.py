@@ -252,7 +252,7 @@ def run_netpea(params, dtype, multiply_expression):
         cnv_data = cnv_data.loc[cnv_data['improve_sample_id'].isin(rs_all['improve_sample_id']),]
         restart_path = params['data_dir'] + '/cnv_data.txt'
         cnv_data.iloc[:,0:2].to_csv(restart_path, sep = '\t', header= True, index=False)
-        outpath = params['mutnet_file']
+        outpath = params['cnvnet_file']
     # perform Random Walk
     print(datetime.now(), 'performing random walk with restart')
     rwr_df = rwr.RWR(ppi_path, restart_path, restartProbFloat=0.5, convergenceFloat=0.00001, normalize='l1', weighted=True).get_prob()
