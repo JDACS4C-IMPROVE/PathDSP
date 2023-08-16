@@ -47,9 +47,9 @@ class RMSELoss(tch.nn.Module):
 
 
 def r2_score(y_true, y_pred):
-    y_mean = tch.mean(y_true)
-    ss_tot = tch.sum((y_true - y_mean)**2)
-    ss_res = tch.sum((y_true - y_pred)**2)
+    y_mean = np.mean(y_true)
+    ss_tot = np.sum((y_true - y_mean)**2)
+    ss_res = np.sum((y_true - y_pred)**2)
     r2 = 1 - ss_res / ss_tot
     return r2
 
@@ -240,8 +240,8 @@ def main(params):
     mse = skmts.mean_squared_error(ytest_arr, prediction_list)
     rmse = np.sqrt(mse)
     r2_pred = r2_score(ytest_arr, prediction_list)
-    loss_pred = pd.DataFrame({'rmse': rmse,
-                              'r2': r2_pred})
+    loss_pred = pd.DataFrame({'metric': ['rmse', 'r2'],
+                            'value': [rmse, r2_pred]})
     loss_pred.to_csv(params['output'] + '/Loss_pred.txt', header=True, index=False, sep="\t")
     # if rmse <= best_rmse:
     #     best_rmse = rmse
