@@ -53,6 +53,15 @@ def r2_score(y_true, y_pred):
     r2 = 1 - ss_res / ss_tot
     return r2
 
+def cal_time(end, start):
+    '''return time spent'''
+    # end = datetime.now(), start = datetime.now()
+    datetimeFormat = '%Y-%m-%d %H:%M:%S.%f'
+    spend = datetime.strptime(str(end), datetimeFormat) - \
+            datetime.strptime(str(start),datetimeFormat)
+    return spend
+
+
 
 def fit(net, train_dl, valid_dl, epochs, learning_rate, device, opt_fn):
     """
@@ -76,8 +85,10 @@ def fit(net, train_dl, valid_dl, epochs, learning_rate, device, opt_fn):
     validr2_list = [] # metrics: r2, size equals to EPOCH
     early_stopping = myutil.EarlyStopping(patience=30, verbose=True) # initialize the early_stopping
     # repeat the training for EPOCH times
+    start_total = datetime.now()
     for epoch in range(epochs):
         ## training phase
+        start = datetime.now()
         net.train()
         # initial loss
         train_epoch_loss = 0.0 # save loss for each epoch, batch by batch
@@ -96,6 +107,7 @@ def fit(net, train_dl, valid_dl, epochs, learning_rate, device, opt_fn):
         # calculate total loss of all batches
         avg_train_loss = train_epoch_loss / len(train_dl)
         trainloss_list.append( avg_train_loss )
+        print('epoch ' + str(i) + ' :[Finished in {:}]'.format(cal_time(datetime.now(), start)))
         ## validation phase
         with tch.no_grad():
             net.eval()
@@ -127,7 +139,8 @@ def fit(net, train_dl, valid_dl, epochs, learning_rate, device, opt_fn):
         if early_stopping.early_stop:
             print("Early stopping")
             break
-        
+    
+    print('Total time (all epochs) :[Finished in {:}]'.format(cal_time(datetime.now(), start_total)))
     # load the last checkpoint with the best model
     net.load_state_dict(tch.load('checkpoint.pt'))
 
@@ -235,7 +248,9 @@ def main(params):
     net.apply(init_weights)
     # fit data with model
     trained_net, train_loss_list, valid_loss_list, valid_r2_list = fit(net, train_dl, valid_dl, epoch, learning_rate, device, opt_fn)
+    start = datetime.now()
     prediction_list = predict(trained_net, test_dl, device)
+    print('Inference time :[Finished in {:}]'.format(cal_time(datetime.now(), start)))
     # evaluation metrics
     mse = skmts.mean_squared_error(ytest_arr, prediction_list)
     rmse = np.sqrt(mse)
