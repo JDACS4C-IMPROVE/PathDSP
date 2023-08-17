@@ -5,7 +5,7 @@ import sys
 #from json import JSONEncoder
 sys.path.append("./PathDSP/")
 from preprocess_new import mkdir, preprocess
-from PathDSP.FNN_new import main
+import FNN_new
 
 file_path = os.path.dirname(os.path.realpath(__file__))
 # This should be set outside as a user environment variable
@@ -65,7 +65,7 @@ def candle_main():
     params = initialize_parameters()
     data_dir = os.environ['CANDLE_DATA_DIR'] + '/' + '/Data/'
     params =  preprocess(params, data_dir)
-    main(params)
+    FNN_new.main(params)
 
 
 if __name__ == "__main__":
