@@ -3,8 +3,9 @@ import os
 import sys
 #import json
 #from json import JSONEncoder
-sys.path.append("./PathDSP/")
 from preprocess_new import mkdir, preprocess
+#sys.path.append("/usr/local/PathDSP/PathDSP")
+sys.path.append("/usr/local/PathDSP/PathDSP")
 import FNN_new
 
 file_path = os.path.dirname(os.path.realpath(__file__))

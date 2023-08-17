@@ -107,7 +107,7 @@ def fit(net, train_dl, valid_dl, epochs, learning_rate, device, opt_fn):
         # calculate total loss of all batches
         avg_train_loss = train_epoch_loss / len(train_dl)
         trainloss_list.append( avg_train_loss )
-        print('epoch ' + str(i) + ' :[Finished in {:}]'.format(cal_time(datetime.now(), start)))
+        print('epoch ' + str(epoch) + ' :[Finished in {:}]'.format(cal_time(datetime.now(), start)))
         ## validation phase
         with tch.no_grad():
             net.eval()
@@ -126,7 +126,7 @@ def fit(net, train_dl, valid_dl, epochs, learning_rate, device, opt_fn):
         avg_valid_loss = valid_epoch_loss / len(valid_dl)
         validloss_list.append( avg_valid_loss)
         valid_r2 = 1 - ss_res / ss_tot
-        validr2_list.append(valid_r2)
+        validr2_list.append(valid_r2.cpu().numpy())
         # display print message
         #print('epoch={:}/{:}, train loss={:.5f}, valid loss={:.5f}'.format(
         #       epoch+1, epochs, train_epoch_loss / len(train_dl),
@@ -257,7 +257,7 @@ def main(params):
     r2_pred = r2_score(ytest_arr, prediction_list)
     loss_pred = pd.DataFrame({'metric': ['rmse', 'r2'],
                             'value': [rmse, r2_pred]})
-    loss_pred.to_csv(params['output'] + '/Loss_pred.txt', header=True, index=False, sep="\t")
+    loss_pred.to_csv(params['data_dir'] + '/Loss_pred.txt', header=True, index=False, sep="\t")
     # if rmse <= best_rmse:
     #     best_rmse = rmse
     #     best_fold = n_fold
@@ -282,6 +282,7 @@ def main(params):
                             'train loss':train_loss_list, 
                             'valid loss': valid_loss_list,
                             'valid r2': valid_r2_list})
+
     ytest_df['prediction'] = prediction_list
     #loss_df_list.append(loss_df)
     #ytest_df_list.append(ytest_df)
@@ -291,15 +292,15 @@ def main(params):
     # save to output
     #all_ytest_df = pd.concat(ytest_df_list, axis=0)
     #all_loss_df = pd.concat(loss_df_list, axis=0)
-    ytest_df.to_csv(params['output'] + '/Prediction.txt', header=True, index=True, sep="\t")
-    loss_df.to_csv(params['output'] + '/Loss.txt', header=True, index=False, sep="\t")
+    ytest_df.to_csv(params['data_dir'] + '/Prediction.txt', header=True, index=True, sep="\t")
+    loss_df.to_csv(params['data_dir'] + '/Loss.txt', header=True, index=False, sep="\t")
     # if params['shap_bool'] == True:
     #     all_shap_df = pd.concat(shap_df_list, axis=0)
     #     all_shap_df.to_csv(params['output'] + '.FNN.cv_' + str(params['cv_int']) + '.SHAP.txt', header=True, index=True, sep="\t")
 
     # make train/valid loss plots
     best_model = trained_net
-    tch.save(best_model.state_dict(), params['output'] + '/model.pt')
+    tch.save(best_model.state_dict(), params['data_dir'] + '/model.pt')
     print( '[Finished in {:}]'.format(myutil.cal_time(datetime.now(), start_time)) )
     # display evaluation metrics of all folds
     #mse, rmse, r_square, pccy = mymts.eval_regressor_performance(all_ytest_df, 'response', 'prediction')

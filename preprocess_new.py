@@ -89,7 +89,7 @@ def preprocess(params, data_dir):
     params['data_dir'] = data_dir
     #args = candle.ArgumentStruct(**params)
     for i in ['train_data', 'test_data', 'val_data', 'drug_bits_file', 'dgnet_file', 
-              'mutnet_file', 'cnvnet_file', 'exp_file', 'output_dir']:
+              'mutnet_file', 'cnvnet_file', 'exp_file']:
         params[i] = params['data_dir'] + '/' + params[i]
     return(params)
 
