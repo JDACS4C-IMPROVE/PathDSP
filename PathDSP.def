@@ -47,7 +47,7 @@ From: pytorch/pytorch:2.0.1-cuda11.7-cudnn8-runtime
 
 	# download conda
 	
-	/opt/conda/bin/conda env create -f environment.yml --prefix /usr/local/conda_envs/PathDSP_env/
+	/opt/conda/bin/conda env create -f environment_081723.yml --prefix /usr/local/conda_envs/PathDSP_env/
 	#/opt/conda/bin/conda activate PathDSP_env
 	/usr/local/conda_envs/PathDSP_env/bin/pip install git+https://github.com/ECP-CANDLE/candle_lib@develop
 
