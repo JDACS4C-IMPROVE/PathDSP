@@ -19,8 +19,8 @@ exp_file='EXP.txt'
 #output='Result/'
 bit_int=128
 permutation_int=3
-metric='auc1'
-data_type='CCLE'
+metric='auc'
+data_type='CTRPv2'
 split=0
 
 

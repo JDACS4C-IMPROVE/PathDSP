@@ -106,8 +106,18 @@ def download_anl_data(params):
         mkdir(x_data_dir)
         mkdir(y_data_dir)
 
-    for improve_file in ['CCLE_all.txt', 'CCLE_split_' + str(params['split']) + '_test.txt',
-                         'CCLE_split_' + str(params['split']) + '_train.txt', 'CCLE_split_' + str(params['split']) + '_val.txt']:
+    for improve_file in ['CCLE_all.txt', 
+                         'CCLE_split_' + str(params['split']) + '_test.txt',
+                         'CCLE_split_' + str(params['split']) + '_train.txt',
+                         'CCLE_split_' + str(params['split']) + '_val.txt',
+                         'CTRPv2_all.txt', 
+                         'CTRPv2_split' + str(params['split']) + '_test.txt',
+                         'CTRPv2_split' + str(params['split']) + '_train.txt',
+                         'CTRPv2_split' + str(params['split']) + '_val.txt',
+                         'gCSI_all.txt',
+                         'GDSCv1_all.txt',
+                         'GDSCv2_all.txt'
+                         ]:
         url_dir = params['improve_data_url'] + '/splits/' 
         candle.file_utils.get_file(improve_file, url_dir + improve_file,
                                    datadir=splits_dir,
@@ -308,7 +318,7 @@ def prep_input(params):
         comb_data_mtx = pd.DataFrame({'drug_id': response_df['drug_id'].values, 
                             'sample_id': response_df['sample_id'].values})
         comb_data_mtx = comb_data_mtx.set_index(['drug_id', 'sample_id']).join(drug_data, on = 'drug_id').join(sample_data, on = 'sample_id')
-        comb_data_mtx['response'] = response_df[params['metric']]
+        comb_data_mtx['response'] = response_df[params['metric']].values
         comb_data_mtx.to_csv(params[i + '_data'], sep = '\t', header= True, index=False)
 
 
