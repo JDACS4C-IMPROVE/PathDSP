@@ -111,9 +111,9 @@ def download_anl_data(params):
                          'CCLE_split_' + str(params['split']) + '_train.txt',
                          'CCLE_split_' + str(params['split']) + '_val.txt',
                          'CTRPv2_all.txt', 
-                         'CTRPv2_split' + str(params['split']) + '_test.txt',
-                         'CTRPv2_split' + str(params['split']) + '_train.txt',
-                         'CTRPv2_split' + str(params['split']) + '_val.txt',
+                         'CTRPv2_split_' + str(params['split']) + '_test.txt',
+                         'CTRPv2_split_' + str(params['split']) + '_train.txt',
+                         'CTRPv2_split_' + str(params['split']) + '_val.txt',
                          'gCSI_all.txt',
                          'GDSCv1_all.txt',
                          'GDSCv2_all.txt'
