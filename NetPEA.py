@@ -166,8 +166,8 @@ class NetPEA:
         if np.std(scoreList) != 0:
             zscore = (score - np.mean(scoreList) ) / np.std(scoreList)
             pvalue = scistat.norm.sf(abs(zscore)) # not pdf
-            print('score={:}, scoreList={:}, zscore={:}, pvalue={:}'.format(
-                   score, scoreList[:10], zscore, pvalue))
+            #print('score={:}, scoreList={:}, zscore={:}, pvalue={:}'.format(
+            #       score, scoreList[:10], zscore, pvalue))
         else:
             zscore, pvalue = np.nan, np.nan
         return [zscore, pvalue]

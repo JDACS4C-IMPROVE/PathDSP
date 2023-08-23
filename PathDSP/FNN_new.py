@@ -32,6 +32,7 @@ import myDatasplit as mysplit
 import myUtility as myutil
 #import myPlotter as myplot
 import myMetrics as mymts
+import polars as pl
 
 #import shap as sp
 
@@ -177,9 +178,13 @@ def predict(net, test_dl, device):
 def main(params):
     start_time = datetime.now()
     # load data
-    train_df = pd.read_csv(params['train_data'], header=0, index_col=[0,1], sep="\t")
-    val_df = pd.read_csv(params['val_data'], header=0, index_col=[0,1], sep="\t")
-    test_df = pd.read_csv(params['test_data'], header=0, index_col=[0,1], sep="\t")
+    print('loadinig data')
+    # train_df = pd.read_csv(params['train_data'], header=0, index_col=[0,1], sep="\t")
+    # val_df = pd.read_csv(params['val_data'], header=0, index_col=[0,1], sep="\t")
+    # test_df = pd.read_csv(params['test_data'], header=0, index_col=[0,1], sep="\t")
+    train_df = pl.read_csv(params['train_data'], separator = "\t").to_pandas()
+    val_df = pl.read_csv(params['val_data'], separator = "\t").to_pandas()
+    test_df = pl.read_csv(params['test_data'], separator = "\t").to_pandas()
     
     # shuffle
     #sdf = skut.shuffle(df, random_state=params["seed_int"])
@@ -247,6 +252,7 @@ def main(params):
     net = mynet.FNN(n_features)
     net.apply(init_weights)
     # fit data with model
+    print('start training process')
     trained_net, train_loss_list, valid_loss_list, valid_r2_list = fit(net, train_dl, valid_dl, epoch, learning_rate, device, opt_fn)
     start = datetime.now()
     prediction_list = predict(trained_net, test_dl, device)
