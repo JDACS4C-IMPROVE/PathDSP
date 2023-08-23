@@ -3,6 +3,7 @@
 import sys
 import os
 import numpy as np
+import polars as pl
 #import torch
 #import torch.utils.data as du
 #from torch.autograd import Variable
@@ -319,7 +320,8 @@ def prep_input(params):
                             'sample_id': response_df['sample_id'].values})
         comb_data_mtx = comb_data_mtx.set_index(['drug_id', 'sample_id']).join(drug_data, on = 'drug_id').join(sample_data, on = 'sample_id')
         comb_data_mtx['response'] = response_df[params['metric']].values
-        comb_data_mtx.to_csv(params[i + '_data'], sep = '\t', header= True, index=False)
+        comb_data_mtx = comb_data_mtx.dropna()
+        pl.from_pandas(comb_data_mtx).write_csv(params[i + '_data'], separator = '\t', has_header = True)
 
 
 def run_ssgsea(params):
