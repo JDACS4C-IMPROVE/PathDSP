@@ -184,7 +184,6 @@ def main(params):
     # test_df = pd.read_csv(params['test_data'], header=0, index_col=[0,1], sep="\t")
     train_df = pl.read_csv(params['train_data'], separator = "\t").to_pandas()
     val_df = pl.read_csv(params['val_data'], separator = "\t").to_pandas()
-    test_df = pl.read_csv(params['test_data'], separator = "\t").to_pandas()
     
     # shuffle
     #sdf = skut.shuffle(df, random_state=params["seed_int"])
@@ -217,31 +216,25 @@ def main(params):
     # get train/test splits
     Xtrain_arr = train_df.iloc[:, 0:-1].values
     Xvalid_arr = val_df.iloc[:, 0:-1].values
-    Xtest_arr = test_df.iloc[:, 0:-1].values
     ytrain_arr = train_df.iloc[:, -1].values
     yvalid_arr = val_df.iloc[:, -1].values    
-    ytest_arr = test_df.iloc[:, -1].values
     
     # get train/valid splits from train
     #Xtrain_arr, Xvalid_arr, ytrain_arr, yvalid_arr = skms.train_test_split(Xtrain_arr, ytrain_arr,
     #                                                                        test_size=0.1, random_state=params['seed_int'])
     #print('    train={:}, valid={:}, test={:}'.format(Xtrain_arr.shape, Xvalid_arr.shape, Xtest_arr.shape))
     # prepare dataframe for output
-    ytest_df = test_df.iloc[:, -1].to_frame()
+    #ytest_df = test_df.iloc[:, -1].to_frame()
     # convert to numpy array
     Xtrain_arr = np.array(Xtrain_arr).astype('float32')
     Xvalid_arr = np.array(Xvalid_arr).astype('float32')
-    Xtest_arr = np.array(Xtest_arr).astype('float32')
     ytrain_arr = np.array(ytrain_arr).astype('float32')
     yvalid_arr = np.array(yvalid_arr).astype('float32')
-    ytest_arr = np.array(ytest_arr).astype('float32')
     # create mini-batch
     train_dataset = mydl.NumpyDataset(tch.from_numpy(Xtrain_arr), tch.from_numpy(ytrain_arr))
     valid_dataset = mydl.NumpyDataset(tch.from_numpy(Xvalid_arr), tch.from_numpy(yvalid_arr))
-    test_dataset = mydl.NumpyDataset(tch.from_numpy(Xtest_arr), tch.from_numpy(ytest_arr))
     train_dl = tchud.DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     valid_dl = tchud.DataLoader(valid_dataset, batch_size=batch_size, shuffle=False)
-    test_dl = tchud.DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
     # initial weight
     def init_weights(m):
         if type(m) == tch.nn.Linear:
@@ -254,16 +247,6 @@ def main(params):
     # fit data with model
     print('start training process')
     trained_net, train_loss_list, valid_loss_list, valid_r2_list = fit(net, train_dl, valid_dl, epoch, learning_rate, device, opt_fn)
-    start = datetime.now()
-    prediction_list = predict(trained_net, test_dl, device)
-    print('Inference time :[Finished in {:}]'.format(cal_time(datetime.now(), start)))
-    # evaluation metrics
-    mse = skmts.mean_squared_error(ytest_arr, prediction_list)
-    rmse = np.sqrt(mse)
-    r2_pred = r2_score(ytest_arr, prediction_list)
-    loss_pred = pd.DataFrame({'metric': ['rmse', 'r2'],
-                            'value': [rmse, r2_pred]})
-    loss_pred.to_csv(params['data_dir'] + '/Loss_pred.txt', header=True, index=False, sep="\t")
     # if rmse <= best_rmse:
     #     best_rmse = rmse
     #     best_fold = n_fold
@@ -289,7 +272,6 @@ def main(params):
                             'valid loss': valid_loss_list,
                             'valid r2': valid_r2_list})
 
-    ytest_df['prediction'] = prediction_list
     #loss_df_list.append(loss_df)
     #ytest_df_list.append(ytest_df)
     # end of fold
@@ -298,7 +280,6 @@ def main(params):
     # save to output
     #all_ytest_df = pd.concat(ytest_df_list, axis=0)
     #all_loss_df = pd.concat(loss_df_list, axis=0)
-    ytest_df.to_csv(params['data_dir'] + '/Prediction.txt', header=True, index=True, sep="\t")
     loss_df.to_csv(params['data_dir'] + '/Loss.txt', header=True, index=False, sep="\t")
     # if params['shap_bool'] == True:
     #     all_shap_df = pd.concat(shap_df_list, axis=0)
