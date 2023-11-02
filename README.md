@@ -1,6 +1,24 @@
 # PathDSP
 Explainable Drug Sensitivity Prediction through Cancer Pathway Enrichment Scores
 
+# Example usage with singularity container
+Setup Singularity
+
+```
+git clone -b develop https://github.com/JDACS4C-IMPROVE/Singularity.git
+cd Singularity
+./setup
+```
+
+Build Singularity from definition file
+
+```
+singularity build --fakeroot PathDSP.sif definitions/PathDSP.def
+```
+
+
+# Docs from original authors (below)
+
 # Requirments
 
 # Input format
