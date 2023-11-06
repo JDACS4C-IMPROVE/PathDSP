@@ -11,7 +11,7 @@
 
 ### Path to your CANDLEized model's main Python script###
 
-CANDLE_MODEL=/usr/local/PathDSP/preprocess_new.py
+CANDLE_MODEL=preprocess_new.py
 
 if [ $# -lt 2 ] ; then
     echo "Illegal number of parameters"

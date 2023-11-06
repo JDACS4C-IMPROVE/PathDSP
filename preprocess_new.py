@@ -1,5 +1,3 @@
-#!/homes/ac.rgnanaolivu/miniconda3/envs/rohan_python/bin/python
-
 import sys
 import os
 import numpy as np
