@@ -20,15 +20,32 @@ singularity build --fakeroot PathDSP.sif definitions/PathDSP.def
 Perform preprocessing step using processed data from original paper
 
 ```
-singularity exec --nv --bind ${IMPROVE_DATA_DIR}:/candle_data_dir PathDSP.sif /usr/local/PathDSP/preprocess.sh 0 /candle_data_dir 0
+singularity exec --nv --bind ${IMPROVE_DATA_DIR}:/candle_data_dir PathDSP.sif /usr/local/PathDSP/preprocess.sh 0 /candle_data_dir "-a 0"
 ```
 
 Alternatively, perform preprocessing step using raw data from IMPROVE project
 
 ```
-singularity exec --nv ${IMPROVE_DATA_DIR}:/candle_data_dir PathDSP.sif /usr/local/PathDSP/preprocess.sh 0 /candle_data_dir 1
+singularity exec --nv --bind ${IMPROVE_DATA_DIR}:/candle_data_dir PathDSP.sif /usr/local/PathDSP/preprocess.sh 0 /candle_data_dir "-a 1"
 ```
 
+Train the model
+
+```
+singularity exec --nv --bind ${IMPROVE_DATA_DIR}:/candle_data_dir PathDSP.sif /usr/local/PathDSP/train.sh 0 /candle_data_dir
+```
+
+Metrics regarding training process is located at: `${IMPROVE_DATA_DIR}/Data/Loss.txt`
+Final trained model is located at: `${IMPROVE_DATA_DIR}/Data/model.pt`
+
+Perform inference on the testing data
+
+```
+singularity exec --nv --bind ${IMPROVE_DATA_DIR}:/candle_data_dir PathDSP.sif /usr/local/PathDSP/infer.sh 0 /candle_data_dir
+```
+
+Metrics regarding training process is located at: `${IMPROVE_DATA_DIR}/Data/Loss_pred.txt`
+Final prediction on testing data is located at: `${IMPROVE_DATA_DIR}/Data/Prediction.txt`
 
 
 
