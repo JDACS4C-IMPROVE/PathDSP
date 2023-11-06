@@ -13,6 +13,7 @@ import polars as pl
 import sklearn.metrics as skmts
 #sys.path.append("/usr/local/PathDSP/PathDSP")
 sys.path.append("/usr/local/PathDSP/PathDSP")
+sys.path.append(os.getcwd() + "/PathDSP")
 import FNN_new
 
 
