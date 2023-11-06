@@ -8,6 +8,7 @@ Setup Singularity
 git clone -b develop https://github.com/JDACS4C-IMPROVE/Singularity.git
 cd Singularity
 ./setup
+source config/improve.env
 ```
 
 Build Singularity from definition file
@@ -15,6 +16,20 @@ Build Singularity from definition file
 ```
 singularity build --fakeroot PathDSP.sif definitions/PathDSP.def
 ```
+
+Perform preprocessing step using processed data from original paper
+
+```
+singularity exec --nv --bind ${IMPROVE_DATA_DIR}:/candle_data_dir PathDSP.sif /usr/local/PathDSP/preprocess.sh 0 /candle_data_dir 0
+```
+
+Alternatively, perform preprocessing step using raw data from IMPROVE project
+
+```
+singularity exec --nv ${IMPROVE_DATA_DIR}:/candle_data_dir PathDSP.sif /usr/local/PathDSP/preprocess.sh 0 /candle_data_dir 1
+```
+
+
 
 
 # Docs from original authors (below)

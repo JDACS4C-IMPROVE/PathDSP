@@ -397,7 +397,7 @@ def candle_main(anl):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('anl', type=int, default=0, help='''whether to perform preprocessing using anl data or directly use processed 
+    parser.add_argument('-a', dest='anl', type=int, default=0, help='''whether to perform preprocessing using anl data or directly use processed 
                         data from the original paper, default to 0 to use processed data from original paper''')
     args = parser.parse_args()
     start = datetime.now()
