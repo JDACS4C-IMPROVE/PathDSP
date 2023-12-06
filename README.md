@@ -68,8 +68,7 @@ Define enviroment variabels
 improve_lib="/path/to/IMPROVE/repo/"
 pathdsp_lib="/path/to/pathdsp/repo/"
 # notice the extra PathDSP folder after pathdsp_lib
-export PYTHONPATH=$PYTHONPATH:improve_lib:pathdsp_lib/PathDSP/
-export IMPROVE_DATA_DIR="/path/to/csa_data/"
+export PYTHONPATH=$PYTHONPATH:${improve_lib}:${pathdsp_lib}/PathDSP/export IMPROVE_DATA_DIR="/path/to/csa_data/"
 export AUTHOR_DATA_DIR="/path/to/author_data/"
 ```
 
