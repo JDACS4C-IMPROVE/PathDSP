@@ -102,6 +102,7 @@ def predicting(model, device, data_loader):
             total_labels = tch.cat((total_labels, data_y.view(-1, 1).cpu()), 0)  # labels to tensor
     return total_labels.numpy().flatten(), total_preds.numpy().flatten()
 
+
 def predict(net, device, test_dl):
     """
     Return prediction list
@@ -132,8 +133,6 @@ def predict(net, device, test_dl):
     true_list = np.hstack(true_list).tolist()
     # return
     return true_list, prediction_list
-
-
 
 def r2_score(y_true, y_pred):
     y_mean = np.mean(y_true)
