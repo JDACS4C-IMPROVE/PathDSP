@@ -5,7 +5,7 @@
 # arg 3 CANDLE_CONFIG
 
 ### Path to your CANDLEized model's main Python script###
-CANDLE_MODEL=train.py
+CANDLE_MODEL=PathDSP_train_improve.py
 
 ### Set env if CANDLE_MODEL is not in same directory as this script
 IMPROVE_MODEL_DIR=${IMPROVE_MODEL_DIR:-$( dirname -- "$0" )}
@@ -48,30 +48,6 @@ elif [ $# -ge 3 ] ; then
     fi
 fi
 
-if [ -d ${CANDLE_DATA_DIR} ]; then
-    if [ "$(ls -A ${CANDLE_DATA_DIR})" ] ; then
-	echo "using data from ${CANDLE_DATA_DIR}"
-    else
-	./candle_glue.sh
-	echo "using original data placed in ${CANDLE_DATA_DIR}"
-    fi
-fi
-
-export CANDLE_DATA_DIR=${CANDLE_DATA_DIR}
-FULL_DATA_DIR="$CANDLE_DATA_DIR/$MODEL_NAME/Data"
-echo $FULL_DATA_DIR
-
-if [ -d ${FULL_DATA_DIR} ]; then
-    if [ "$(ls -A ${FULL_DATA_DIR})" ] ; then
-	echo "using data from ${FULL_DATA_DIR}"
-    else
-	./candle_glue.sh
-	echo "using original data placed in ${FULL_DATA_DIR}"
-    fi
-else
-    ./candle_glue.sh
-    echo "using original data placed in ${FULL_DATA_DIR}"
-fi
 
 # Display runtime arguments
 echo "using CUDA_VISIBLE_DEVICES ${CUDA_VISIBLE_DEVICES}"

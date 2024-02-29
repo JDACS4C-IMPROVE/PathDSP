@@ -1,7 +1,5 @@
 #!/bin/bash
 
-#!/bin/bash
-
 #########################################################################
 ### THIS IS A TEMPLATE FILE. SUBSTITUTE #PATH# WITH THE MODEL EXECUTABLE.
 #########################################################################
@@ -12,7 +10,7 @@
 # arg 3 CANDLE_CONFIG
 
 ### Path to your CANDLEized model's main Python script###
-CANDLE_MODEL=infer.py
+CANDLE_MODEL=PathDSP_infer_improve.py
 
 if [ $# -lt 2 ] ; then
     echo "Illegal number of parameters"
