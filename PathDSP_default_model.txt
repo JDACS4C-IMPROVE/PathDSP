@@ -32,7 +32,7 @@ val_batch = 12
 loss = "mse"
 early_stop_metric = "mse"
 patience = 30
-cuda_name = "cuda:2"
+cuda_name = "cuda:0"
 learning_rate = 0.001
 dropout=0.1
 
