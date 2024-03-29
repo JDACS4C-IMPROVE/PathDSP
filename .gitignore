@@ -1,5 +1,8 @@
 .ipynb_checkpoints/
 PathDSP/__pycache__/
 __pycache__/
-EDA.ipynb
+EDA.ipynib
+ml_data/
+dh_hpo_improve/
+dh_hpo_logs/
 
