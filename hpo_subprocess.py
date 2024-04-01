@@ -7,7 +7,7 @@ and the env vars $IMPROVE_DATA_DIR and $PYTHONPATH are set:
 export IMPROVE_DATA_DIR="./csa_data/"
 export PYTHONPATH=$PYTHONPATH:/path/to/IMPROVE_lib
 
-mpirun -np 2 python hpo_subprocess.py
+mpirun -np 10 python hpo_subprocess.py
 
 TODO: how to distribute HPO to mulitple GPUs?
 """
@@ -17,13 +17,37 @@ import subprocess
 import pandas as pd
 import os
 import logging
-
+import os
+import mpi4py
+from mpi4py import MPI
 from deephyper.evaluator import Evaluator, profile
 from deephyper.evaluator.callback import TqdmCallback
 from deephyper.problem import HpProblem
 from deephyper.search.hps import CBO
 from mpi4py import MPI
 
+# ---------------------
+# Enable using multiple GPUs
+# ---------------------
+
+mpi4py.rc.initialize = False
+mpi4py.rc.threads = True
+mpi4py.rc.thread_level = "multiple"
+mpi4py.rc.recv_mprobe = False
+
+if not MPI.Is_initialized():
+    MPI.Init_thread()
+
+comm = MPI.COMM_WORLD
+rank = comm.Get_rank()
+size = comm.Get_size()
+
+num_gpus_per_node = 2
+os.environ["CUDA_VISIBLE_DEVICES"] = str(rank % num_gpus_per_node + 6)
+
+# ---------------------
+# Enable logging
+# ---------------------
 
 logging.basicConfig(
     # filename=f"deephyper.{rank}.log, # optional if we want to store the logs to disk
@@ -31,14 +55,6 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(filename)s:%(funcName)s - %(message)s",
     force=True,
 )
-
-# ---------------------
-# Enable using multiple GPUs
-# ---------------------
-#comm = MPI.COMM_WORLD
-#rank = comm.Get_rank()
-# need to set -np to 3 or higher for mpirun
-os.environ["CUDA_VISIBLE_DEVICES"] = "6,7"
 
 # ---------------------
 # Hyperparameters
@@ -130,7 +146,7 @@ if __name__ == "__main__":
             # max_evals = 4
             # max_evals = 10
             # max_evals = 20
-            max_evals = 100
+            max_evals = 20
             # max_evals = 100
             results = search.search(max_evals=max_evals)
             results = results.sort_values("m:val_loss", ascending=True)
