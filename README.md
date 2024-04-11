@@ -3,7 +3,7 @@
 Install conda environment for deephyper
 
 ```
-git clone -b deephyper https://github.com/JDACS4C-IMPROVE/PathDSP.git
+git clone -b deephyper https://github.com/Liuy12/PathDSP.git
 bash ./PathDSP/install_polaris.sh
 ```
 
