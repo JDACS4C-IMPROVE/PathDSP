@@ -10,11 +10,14 @@
 # https://saturncloud.io/blog/activating-conda-environments-from-scripts-a-guide-for-data-scientists
 # https://stackoverflow.com/questions/34534513/calling-conda-source-activate-from-bash-script
 # This doesn't work w/o eval "$(conda shell.bash hook)"
-CONDA_ENV=PathDSP_env
-echo "Allow conda commands in shell script by running 'conda shell.bash hook'"
-eval "$(conda shell.bash hook)"
+CONDA_ENV=$PathDSP_env
+#echo "Allow conda commands in shell script by running 'conda shell.bash hook'"
+#eval "$(conda shell.bash hook)"
 echo "Activated conda commands in shell script"
-conda activate $CONDA_ENV
+#conda activate $CONDA_ENV
+#source activate $CONDA_ENV
+#source /soft/datascience/conda/2023-10-04/mconda3/bin/activate $CONDA_ENV
+source activate $CONDA_ENV
 echo "Activated conda env $CONDA_ENV"
 
 train_ml_data_dir=$1
@@ -38,5 +41,6 @@ python PathDSP_train_improve.py \
     --model_outdir $model_outdir \
     --epochs $epochs
 
-conda deactivate
+#conda deactivate
+source /soft/datascience/conda/2023-10-04/mconda3/bin/deactivate
 echo "Deactivated conda env $CONDA_ENV"

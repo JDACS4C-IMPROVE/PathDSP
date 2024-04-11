@@ -43,7 +43,7 @@ rank = comm.Get_rank()
 size = comm.Get_size()
 
 num_gpus_per_node = 2
-os.environ["CUDA_VISIBLE_DEVICES"] = str(rank % num_gpus_per_node + 6)
+os.environ["CUDA_VISIBLE_DEVICES"] = str(rank % num_gpus_per_node)
 
 # ---------------------
 # Enable logging
@@ -146,7 +146,7 @@ if __name__ == "__main__":
             # max_evals = 4
             # max_evals = 10
             # max_evals = 20
-            max_evals = 20
+            max_evals = 10
             # max_evals = 100
             results = search.search(max_evals=max_evals)
             results = results.sort_values("m:val_loss", ascending=True)
