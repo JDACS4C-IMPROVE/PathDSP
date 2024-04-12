@@ -23,7 +23,7 @@ conda activate dhenv/
 pip install --upgrade pip
 
 # For mpi4py
-module swap PrgEnv-nvhpc PrgEnv-gnu
+#module swap PrgEnv-nvhpc PrgEnv-gnu
 module load nvhpc-mixed
 git clone https://github.com/mpi4py/mpi4py.git
 cd mpi4py/

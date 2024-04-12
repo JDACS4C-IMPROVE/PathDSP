@@ -16,8 +16,8 @@ CONDA_ENV=$PathDSP_env
 echo "Activated conda commands in shell script"
 #conda activate $CONDA_ENV
 #source activate $CONDA_ENV
-#source /soft/datascience/conda/2023-10-04/mconda3/bin/activate $CONDA_ENV
-source activate $CONDA_ENV
+source /soft/datascience/conda/2023-10-04/mconda3/bin/activate $CONDA_ENV
+#source activate $CONDA_ENV
 echo "Activated conda env $CONDA_ENV"
 
 train_ml_data_dir=$1
