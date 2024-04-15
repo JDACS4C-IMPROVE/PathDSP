@@ -54,7 +54,7 @@ Perform preprocessing
 ```
 conda activate $PathDSP_env
 ## You can copy the processed files under my home dir
-cp -r /home/yuanhangl_alcf/improve_project/repo/PathDSP/ml_data/ ./PathDSP/
+cp -r /lus/eagle/projects/IMPROVE_Aim1/yuanhangl_alcf/PathDSP/ml_data/ ./PathDSP/
 ## Alternatively, run the preprocess script
 ## This script taks around 40 mins to complete
 ## python PathDSP/PathDSP_preprocess_improve.py --ml_data_outdir=./PathDSP/ml_data/GDSCv1-GDSCv1/split_4/
