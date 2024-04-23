@@ -54,7 +54,10 @@ def run(params):
     trained_net.load_state_dict(tch.load(modelpath))
     trained_net.eval()
     myutil.set_seed(params["seed_int"])
-    device = myutil.get_device(uth=int(params['cuda_name'].split(':')[1]))
+    if 'CUDA_VISIBLE_DEVICES' in os.environ:
+        device = 'cuda:'+str(os.environ['CUDA_VISIBLE_DEVICES'])
+    else:
+        device = myutil.get_device(uth=int(params['cuda_name'].split(':')[1]))
     test_dataset = mydl.NumpyDataset(tch.from_numpy(Xtest_arr), tch.from_numpy(ytest_arr))
     test_dl = tchud.DataLoader(test_dataset, batch_size=params['test_batch'], shuffle=False)
     start = datetime.now()
