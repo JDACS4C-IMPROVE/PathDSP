@@ -33,6 +33,7 @@ import myModel as mynet
 import myDataloader as mydl
 import myUtility as myutil
 import polars as pl
+import json
 
 file_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -348,6 +349,11 @@ def main(args):
         required=None,
     )
     val_scores = run(params)
+    # with open(params["model_outdir"] + '/params.json', 'w') as json_file:
+    #     json.dump(params, json_file, indent=4)
+    df = pd.DataFrame.from_dict(params, orient='index', columns=['value'])
+    df.to_csv(params["model_outdir"] + '/params.txt',sep="\t")
+
 
 
 if __name__ == "__main__":
