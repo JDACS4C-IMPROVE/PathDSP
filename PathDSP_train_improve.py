@@ -33,6 +33,7 @@ import myModel as mynet
 import myDataloader as mydl
 import myUtility as myutil
 import polars as pl
+import json
 
 file_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -249,9 +250,10 @@ def run(params):
     # set parameters
     myutil.set_seed(params["seed_int"])
     ## set device
-    if 'CUDA_VISIBLE_DEVICES' in os.environ:
-        device = 'cuda:'+str(os.environ['CUDA_VISIBLE_DEVICES'])
-    else:  
+    cuda_env_visible = os.getenv("CUDA_VISIBLE_DEVICES")
+    if cuda_env_visible is not None:
+        device = 'cuda:'+str(os.getenv("CUDA_VISIBLE_DEVICES"))
+    else:
         device = myutil.get_device(uth=int(params['cuda_name'].split(':')[1]))
     learning_rate = params['learning_rate']
     epoch = params['epochs']
@@ -348,6 +350,11 @@ def main(args):
         required=None,
     )
     val_scores = run(params)
+    # with open(params["model_outdir"] + '/params.json', 'w') as json_file:
+    #     json.dump(params, json_file, indent=4)
+    df = pd.DataFrame.from_dict(params, orient='index', columns=['value'])
+    df.to_csv(params["model_outdir"] + '/params.txt',sep="\t")
+
 
 
 if __name__ == "__main__":
