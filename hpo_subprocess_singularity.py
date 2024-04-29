@@ -40,7 +40,7 @@ comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 size = comm.Get_size()
 
-num_gpus_per_node = 5
+num_gpus_per_node = 2
 os.environ["CUDA_VISIBLE_DEVICES"] = str(rank % num_gpus_per_node)
 
 # ---------------------
@@ -91,7 +91,8 @@ def run(job, optuna_trial=None):
     #     params.update(config)
 
     model_outdir_job_id = model_outdir + f"/{job.id}"
-
+    learning_rate = job.parameters["learning_rate"]
+    batch_size = job.parameters["batch_size"]
     # val_scores = main_train_grapdrp([
     #     "--train_ml_data_dir", str(train_ml_data_dir),
     #     "--val_ml_data_dir", str(val_ml_data_dir),
@@ -103,6 +104,8 @@ def run(job, optuna_trial=None):
              str(train_ml_data_dir),
              str(val_ml_data_dir),
              str(model_outdir_job_id),
+             str(learning_rate),
+             str(batch_size),
              str(os.environ["CUDA_VISIBLE_DEVICES"])
         ], 
         capture_output=True, text=True, check=True
@@ -145,7 +148,7 @@ if __name__ == "__main__":
             # max_evals = 4
             # max_evals = 10
             # max_evals = 20
-            max_evals = 10
+            max_evals = 2
             # max_evals = 100
             results = search.search(max_evals=max_evals)
             results = results.sort_values("m:val_loss", ascending=True)

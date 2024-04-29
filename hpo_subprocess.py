@@ -17,9 +17,7 @@ import subprocess
 import pandas as pd
 import os
 import logging
-import os
 import mpi4py
-from mpi4py import MPI
 from deephyper.evaluator import Evaluator, profile
 from deephyper.evaluator.callback import TqdmCallback
 from deephyper.problem import HpProblem
