@@ -250,9 +250,10 @@ def run(params):
     # set parameters
     myutil.set_seed(params["seed_int"])
     ## set device
-    if 'CUDA_VISIBLE_DEVICES' in os.environ:
-        device = 'cuda:'+str(os.environ['CUDA_VISIBLE_DEVICES'])
-    else:  
+    cuda_env_visible = os.getenv("CUDA_VISIBLE_DEVICES")
+    if cuda_env_visible is not None:
+        device = 'cuda:'+str(os.getenv("CUDA_VISIBLE_DEVICES"))
+    else:
         device = myutil.get_device(uth=int(params['cuda_name'].split(':')[1]))
     learning_rate = params['learning_rate']
     epoch = params['epochs']
