@@ -14,8 +14,10 @@
 set -xe
 
 # Load modules available on the current system
-module load PrgEnv-gnu/8.3.3
-module load conda/2023-10-04
+module load PrgEnv-gnu
+# conda is not avilable
+# need to install conda locally
+#module load conda/2023-10-04
 
 # Copy the base conda environment
 conda create -p dhenv python=3.9 pip -y
@@ -25,10 +27,11 @@ pip install --upgrade pip
 # For mpi4py
 #module swap PrgEnv-nvhpc PrgEnv-gnu
 module load nvhpc-mixed
-git clone https://github.com/mpi4py/mpi4py.git
-cd mpi4py/
-MPICC=CC python setup.py install
-cd ../
+# git clone https://github.com/mpi4py/mpi4py.git
+# cd mpi4py/
+# MPICC=CC python setup.py install
+# cd ../
+conda install mpi4py --yes
 
 # Install the DeepHyper's Python package
 git clone -b develop git@github.com:deephyper/deephyper.git
@@ -40,6 +43,6 @@ echo "#!/bin/bash" >> activate-dhenv.sh
 
 # Append modules loading and conda activation
 echo "" >> activate-dhenv.sh
-echo "module load PrgEnv-gnu/8.3.3" >> activate-dhenv.sh
-echo "module load conda/2023-10-04" >> activate-dhenv.sh
+echo "module load PrgEnv-gnu" >> activate-dhenv.sh
+#echo "module load conda/2023-10-04" >> activate-dhenv.sh
 echo "conda activate $PWD/dhenv/" >> activate-dhenv.sh
