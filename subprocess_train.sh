@@ -27,16 +27,16 @@ val_ml_data_dir=$2
 model_outdir=$3
 learning_rate=$4
 batch_size=$5
-cuda_name=$6
-#CUDA_VISIBLE_DEVICES=$6
+#cuda_name=$6
+CUDA_VISIBLE_DEVICES=$6
 
 echo "train_ml_data_dir: $train_ml_data_dir"
 echo "val_ml_data_dir:   $val_ml_data_dir"
 echo "model_outdir:      $model_outdir"
 echo "learning_rate:      $learning_rate"
 echo "batch_size:      $batch_size"
-echo "cuda_name:       $cuda_name"
-#echo "CUDA_VISIBLE_DEVICES: $CUDA_VISIBLE_DEVICES"
+#echo "cuda_name:       $cuda_name"
+echo "CUDA_VISIBLE_DEVICES: $CUDA_VISIBLE_DEVICES"
 
 # epochs=10
 epochs=10
@@ -46,15 +46,14 @@ epochs=10
 #CUDA_VISIBLE_DEVICES=6,7 python PathDSP_train_improve.py \
 #CUDA_VISIBLE_DEVICES=5
 #CUDA_VISIBLE_DEVICES=6,7
-#CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES} 
-python PathDSP_train_improve.py \
+CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES} python PathDSP_train_improve.py \
     --train_ml_data_dir $train_ml_data_dir \
     --val_ml_data_dir $val_ml_data_dir \
     --model_outdir $model_outdir \
     --epochs $epochs \
     --learning_rate $learning_rate \
-    --batch_size $batch_size \
-    --cuda_name $cuda_name
+    --batch_size $batch_size
+#    --cuda_name $cuda_name
 
 #conda deactivate
 source $conda_path/bin/deactivate

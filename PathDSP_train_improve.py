@@ -256,7 +256,7 @@ def run(params):
     # else:
     #     device = myutil.get_device(uth=int(params['cuda_name'].split(':')[1]))
     device = myutil.get_device(uth=int(params['cuda_name'].split(':')[1]))
-    print("Using device: " + device)
+    #print("Using device: " + device)
     learning_rate = params['learning_rate']
     epoch = params['epochs']
     batch_size = params['batch_size']

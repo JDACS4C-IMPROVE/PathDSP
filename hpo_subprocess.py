@@ -41,8 +41,8 @@ rank = comm.Get_rank()
 size = comm.Get_size()
 
 num_gpus_per_node = 3
-#os.environ["CUDA_VISIBLE_DEVICES"] = str(rank % num_gpus_per_node)
-cuda_name = "cuda:" + str(rank % num_gpus_per_node)
+os.environ["CUDA_VISIBLE_DEVICES"] = str(rank % num_gpus_per_node)
+#cuda_name = "cuda:" + str(rank % num_gpus_per_node)
 
 # ---------------------
 # Enable logging
@@ -107,8 +107,8 @@ def run(job, optuna_trial=None):
              str(model_outdir_job_id),
              str(learning_rate),
              str(batch_size),
-             str(cuda_name)
-             #str(os.environ["CUDA_VISIBLE_DEVICES"])
+             #str(cuda_name)
+             str(os.environ["CUDA_VISIBLE_DEVICES"])
         ], 
         capture_output=True, text=True, check=True
     )
