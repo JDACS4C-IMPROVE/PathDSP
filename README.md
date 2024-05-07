@@ -60,14 +60,28 @@ cp -r /lus/eagle/projects/IMPROVE_Aim1/yuanhangl_alcf/PathDSP/ml_data/ ./PathDSP
 ## python PathDSP/PathDSP_preprocess_improve.py --ml_data_outdir=./PathDSP/ml_data/GDSCv1-GDSCv1/split_4/
 ```
 
-Activate deephyper environment and perform HPO
+Activate deephyper environment
 
 ```
 # the .sh script sometimes does not activate the environment somehow
 # bash ./activate-dhenv.sh
-module load PrgEnv-gnu/8.3.3
-module load conda/2023-10-04
+module load PrgEnv-gnu
+#module load conda/2023-10-04
 conda activate ./dhenv/
+```
+
+Perform HPO using conda
+
+```
 cd PathDSP
+## make sure mpirun is from the current conda environment
 mpirun -np 10 python hpo_subprocess.py
+```
+
+Alternatively, perform HPO using singularity container
+
+```
+module use /soft/spack/gcc/0.6.1/install/modulefiles/Core
+module load apptainer
+mpirun -np 10 python hpo_subprocess_singularity.py
 ```
