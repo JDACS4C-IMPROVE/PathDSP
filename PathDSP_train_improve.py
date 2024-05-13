@@ -14,7 +14,6 @@ from PathDSP_preprocess_improve import cal_time, preprocess, model_preproc_param
 #sys.path.append("/usr/local/PathDSP/PathDSP")
 #sys.path.append(os.getcwd() + "/PathDSP")
 #import FNN_new
-import os
 import argparse
 import numpy as np
 import pandas as pd
@@ -34,6 +33,7 @@ import myDataloader as mydl
 import myUtility as myutil
 import polars as pl
 import json
+import socket
 
 file_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -253,6 +253,7 @@ def run(params):
     cuda_env_visible = os.getenv("CUDA_VISIBLE_DEVICES")
     if cuda_env_visible is not None:
         device = 'cuda:0'
+        params["CUDA_VISIBLE_DEVICES"] = cuda_env_visible
     else:
         device = myutil.get_device(uth=int(params['cuda_name'].split(':')[1]))
     #print("Using device: " + device)
@@ -350,6 +351,8 @@ def main(args):
         additional_definitions=additional_definitions,
         required=None,
     )
+    # get node name
+    params["node_name"] = socket.gethostname()
     val_scores = run(params)
     # with open(params["model_outdir"] + '/params.json', 'w') as json_file:
     #     json.dump(params, json_file, indent=4)

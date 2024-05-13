@@ -7,9 +7,11 @@ and the env vars $IMPROVE_DATA_DIR and $PYTHONPATH are set:
 export IMPROVE_DATA_DIR="./csa_data/"
 export PYTHONPATH=$PYTHONPATH:/path/to/IMPROVE_lib
 
-mpirun -np 10 python hpo_subprocess.py
+It also assumes that your processed training data is at: "ml_data/{source}-{source}/split_{split}"
+validation data is at: "ml_data/{source}-{source}/split_{split}"
+model output files will be saved at "dh_hpo_improve/{source}/split_{split}"
 
-TODO: how to distribute HPO to mulitple GPUs?
+mpirun -np 10 python hpo_subprocess.py
 """
 # import copy
 import json
@@ -40,7 +42,7 @@ comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 size = comm.Get_size()
 
-num_gpus_per_node = 3
+num_gpus_per_node = 4
 os.environ["CUDA_VISIBLE_DEVICES"] = str(rank % num_gpus_per_node)
 #cuda_name = "cuda:" + str(rank % num_gpus_per_node)
 
