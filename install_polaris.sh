@@ -45,4 +45,5 @@ echo "#!/bin/bash" >> activate-dhenv.sh
 echo "" >> activate-dhenv.sh
 echo "module load PrgEnv-gnu" >> activate-dhenv.sh
 #echo "module load conda/2023-10-04" >> activate-dhenv.sh
-echo "conda activate $PWD/dhenv/" >> activate-dhenv.sh
+conda_path=$(dirname $(dirname $(which conda)))
+echo "source $conda_path/bin/activate $PWD/dhenv/" >> activate-dhenv.sh
