@@ -12,11 +12,13 @@ set -xe
 # Move to the directory where `qsub example-improve.sh` was run
 cd ${PBS_O_WORKDIR}
 
+# source enviroemnt variabels for IMPROVE
+source $IMPROVE_env
+
 # Activate the current environement (module load, conda activate etc...)
-module load PrgEnv-gnu
 # Assume conda is installed
+module load PrgEnv-gnu
 conda_path=$(dirname $(dirname $(which conda)))
-# Assume dh_env is defined
 source $conda_path/bin/activate $dh_env
 
 # Resource allocation for DeepHyper
@@ -47,5 +49,6 @@ echo PMI_LOCAL_RANK: ${PMI_LOCAL_RANK}
 # ensure that mpi is pointing to the one within deephyper conda environment
 # set_affinity_gpu_polaris.sh does not seem to work right now
 # but CUDA_VISIBLE_DEVICES was set within hpo_subprocess.py, 
-mpiexec -n ${NTOTRANKS} -host ${RANKS_HOSTS} \
-    --envall \ ./set_affinity_gpu_polaris.sh python hpo_subprocess.py
+${dh_env}/bin/mpiexec -n ${NTOTRANKS} -host ${RANKS_HOSTS} \
+    --envall \
+    ./set_affinity_gpu_polaris.sh python hpo_subprocess.py
