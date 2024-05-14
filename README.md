@@ -1,13 +1,13 @@
-# Setup environment on Polaris for deephyper
+# Run HPO using deephyper on Polaris
 
-Install conda environment for deephyper
+## Install deephyper environment
 
 ```
 git clone -b deephyper https://github.com/Liuy12/PathDSP.git
 bash ./PathDSP/install_polaris.sh
 ```
 
-Install conda environment for the curated model (PathDSP)
+## Install conda environment for the curated model (PathDSP)
 
 ```
 ## install IMPROVE
@@ -19,69 +19,71 @@ conda activate ${PathDSP_env}
 pip install git+https://github.com/ECP-CANDLE/candle_lib@develop
 ```
 
-Download csa benchmark data
+## Download csa benchmark data
 
 ```
 wget --cut-dirs=7 -P ./ -nH -np -m ftp.mcs.anl.gov/pub/candle/public/improve/benchmarks/single_drug_drp/benchmark-data-pilot1/csa_data
 ```
 
-Download additional author data (PathDSP only)
+## Download additional author data (PathDSP only)
 
 ```
 mkdir author_data
 bash ./PathDSP/download_author_data.sh author_data/
 ```
 
-Define environment variables
+## Define environment variables
 
 ```
-### need to firstly request an interactive node first from polaris
-### use debug queue for testing
-### it might take a while for a node to become available
-qsub -A IMPROVE -I -l select=1 -l filesystems=home:eagle -l walltime=1:00:00 -q debug
+### if necessary, request an interactive node from polaris to testing purposes
+###  qsub -A IMPROVE -I -l select=1 -l filesystems=home:eagle -l walltime=1:00:00 -q debug
 ### NEED to cd into your working directory again once the job started
 improve_lib="$PWD/IMPROVE/"
 pathdsp_lib="$PWD/PathDSP/"
 # notice the extra PathDSP folder after pathdsp_lib
-export PYTHONPATH=$PYTHONPATH:${improve_lib}:${pathdsp_lib}/PathDSP/
-export IMPROVE_DATA_DIR="$PWD/csa_data/"
-export AUTHOR_DATA_DIR="$PWD/author_data/"
-export PathDSP_env="$PWD/PathDSP_env/"
+echo "export PYTHONPATH=$PYTHONPATH:${improve_lib}:${pathdsp_lib}/PathDSP/" >> IMPROVE_env
+# IMPROVE_DATA_DIR
+echo "export IMPROVE_DATA_DIR=$PWD/csa_data/" >> IMPROVE_env
+# AUTHOR_DATA_DIR required for PathDSP
+echo "export AUTHOR_DATA_DIR=$PWD/author_data/" >> IMPROVE_env
+# PathDSP_env: conda environment path for the model
+echo "export PathDSP_env=$PWD/PathDSP_env/" >> IMPROVE_env
+# dh_env: conda envoronment path for deephyper
+echo "export dh_env=$PWD/dhenv/" >> IMPROVE_env
+source $PWD/IMPROVE_env
 ```
 
-Perform preprocessing
+## Perform preprocessing
 
 ```
 conda activate $PathDSP_env
-## You can copy the processed files under my home dir
+## You can copy the processed files for PathDSP
 cp -r /lus/eagle/projects/IMPROVE_Aim1/yuanhangl_alcf/PathDSP/ml_data/ ./PathDSP/
 ## Alternatively, run the preprocess script
 ## This script taks around 40 mins to complete
 ## python PathDSP/PathDSP_preprocess_improve.py --ml_data_outdir=./PathDSP/ml_data/GDSCv1-GDSCv1/split_4/
 ```
 
-Activate deephyper environment
-
-```
-# the .sh script sometimes does not activate the environment somehow
-# bash ./activate-dhenv.sh
-module load PrgEnv-gnu
-#module load conda/2023-10-04
-conda activate ./dhenv/
-```
-
-Perform HPO using conda
+## Perform HPO across two nodes based on conda
 
 ```
 cd PathDSP
-## make sure mpirun is from the current conda environment
-mpirun -np 10 python hpo_subprocess.py
+# supply environment variables to qsub
+qsub -v IMPROVE_env=../IMPROVE_env ./hpo_scale.sh
+## for interactive node, you can run: mpirun -np 10 python hpo_subprocess.py
 ```
 
-Alternatively, perform HPO using singularity container
+## Alternatively, perform HPO using singularity container across two nodes
 
 ```
+## copy processed to IMPROVE_DATA_DIR
+cp -r /lus/eagle/projects/IMPROVE_Aim1/yuanhangl_alcf/PathDSP/ml_data/ $IMPROVE_DATA_DIR
+## specify singularity image file for PathDSP
+echo "export PathDSP_sif=/lus/eagle/projects/IMPROVE_Aim1/yuanhangl_alcf/PathDSP.sif" >> IMPROVE_env
+## enable singularity on polaris
 module use /soft/spack/gcc/0.6.1/install/modulefiles/Core
 module load apptainer
-mpirun -np 10 python hpo_subprocess_singularity.py
+cd PathDSP
+qsub -v IMPROVE_env=../IMPROVE_env ./hpo_scale_singularity.sh
+## for interative node, run: mpirun -np 10 python hpo_subprocess_singularity.py
 ```
