@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# install script is not needed as it's troublesome to install mpi4py libraray
+# use conda base environment directly instead
+
 # From Romain Egele (this script is called install.sh)
 
 # Generic installation script for DeepHyper on ALCF's Polaris.
@@ -27,11 +30,11 @@ pip install --upgrade pip
 # For mpi4py
 #module swap PrgEnv-nvhpc PrgEnv-gnu
 module load nvhpc-mixed
-# git clone https://github.com/mpi4py/mpi4py.git
-# cd mpi4py/
-# MPICC=CC python setup.py install
-# cd ../
-conda install mpi4py --yes
+git clone https://github.com/mpi4py/mpi4py.git
+cd mpi4py/
+MPICC=CC python setup.py install
+cd ../
+#conda install mpi4py --yes
 
 # Install the DeepHyper's Python package
 git clone -b develop git@github.com:deephyper/deephyper.git

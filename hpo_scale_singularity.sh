@@ -17,11 +17,12 @@ source $IMPROVE_env
 
 # Activate the current environement (module load, conda activate etc...)
 module load PrgEnv-gnu
-# Assume conda is installed
+module use /soft/modulefiles 
+module load conda
+# activate base environment
 conda_path=$(dirname $(dirname $(which conda)))
-echo $dh_env
-source $conda_path/bin/activate $dh_env
-
+source $conda_path/bin/activate base
+#source $conda_path/bin/activate $dh_env
 # load module to run singularity container
 module use /soft/spack/gcc/0.6.1/install/modulefiles/Core
 module load apptainer
@@ -54,5 +55,5 @@ echo PMI_LOCAL_RANK: ${PMI_LOCAL_RANK}
 # ensure that mpi is pointing to the one within deephyper conda environment
 # set_affinity_gpu_polaris.sh does not seem to work right now
 # but CUDA_VISIBLE_DEVICES was set within hpo_subprocess.py, 
-${dh_env}/bin/mpiexec -n ${NTOTRANKS} -host ${RANKS_HOSTS} \
+mpiexec -n ${NTOTRANKS} -host ${RANKS_HOSTS} \
     --envall ./set_affinity_gpu_polaris.sh python hpo_subprocess_singularity.py

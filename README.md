@@ -1,15 +1,10 @@
 # Run HPO using deephyper on Polaris
 
-## Install deephyper environment
-
-```
-git clone -b deephyper https://github.com/Liuy12/PathDSP.git
-bash ./PathDSP/install_polaris.sh
-```
-
 ## Install conda environment for the curated model (PathDSP)
 
 ```
+## install PathDSP
+git clone -b deephyper https://github.com/Liuy12/PathDSP.git
 ## install IMPROVE
 git clone -b develop https://github.com/JDACS4C-IMPROVE/IMPROVE.git
 ## define where to install PathDSP env
@@ -47,9 +42,7 @@ echo "export IMPROVE_DATA_DIR=$PWD/csa_data/" >> IMPROVE_env
 # AUTHOR_DATA_DIR required for PathDSP
 echo "export AUTHOR_DATA_DIR=$PWD/author_data/" >> IMPROVE_env
 # PathDSP_env: conda environment path for the model
-echo "export PathDSP_env=$PWD/PathDSP_env/" >> IMPROVE_env
-# dh_env: conda envoronment path for deephyper
-echo "export dh_env=$PWD/dhenv/" >> IMPROVE_env
+echo "export PathDSP_env=$PathDSP_env" >> IMPROVE_env
 source $PWD/IMPROVE_env
 ```
 
@@ -80,9 +73,6 @@ qsub -v IMPROVE_env=../IMPROVE_env ./hpo_scale.sh
 cp -r /lus/eagle/projects/IMPROVE_Aim1/yuanhangl_alcf/PathDSP/ml_data/ $IMPROVE_DATA_DIR
 ## specify singularity image file for PathDSP
 echo "export PathDSP_sif=/lus/eagle/projects/IMPROVE_Aim1/yuanhangl_alcf/PathDSP.sif" >> IMPROVE_env
-## enable singularity on polaris
-module use /soft/spack/gcc/0.6.1/install/modulefiles/Core
-module load apptainer
 cd PathDSP
 qsub -v IMPROVE_env=../IMPROVE_env ./hpo_scale_singularity.sh
 ## for interative node, run: mpirun -np 10 python hpo_subprocess_singularity.py

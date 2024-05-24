@@ -25,6 +25,7 @@ from deephyper.evaluator.callback import TqdmCallback
 from deephyper.problem import HpProblem
 from deephyper.search.hps import CBO
 from mpi4py import MPI
+import socket
 
 # ---------------------
 # Enable using multiple GPUs
@@ -41,9 +42,12 @@ if not MPI.Is_initialized():
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 size = comm.Get_size()
+local_rank = os.environ["PMI_LOCAL_RANK"]
 
-num_gpus_per_node = 4
-os.environ["CUDA_VISIBLE_DEVICES"] = str(rank % num_gpus_per_node)
+# CUDA_VISIBLE_DEVICES is now set via set_affinity_gpu_polaris.sh
+# uncomment the below commands if running via interactive node
+#num_gpus_per_node = 4
+#os.environ["CUDA_VISIBLE_DEVICES"] = str(rank % num_gpus_per_node)
 #cuda_name = "cuda:" + str(rank % num_gpus_per_node)
 
 # ---------------------
@@ -157,5 +161,5 @@ if __name__ == "__main__":
             results = search.search(max_evals=max_evals)
             results = results.sort_values("m:val_loss", ascending=True)
             results.to_csv(model_outdir + "/hpo_results.csv", index=False)
-
+    print("current node: ", socket.gethostname(), "; current rank: ", rank, "; local rank", local_rank, "; CUDA_VISIBLE_DEVICE is set to: ", os.environ["CUDA_VISIBLE_DEVICES"])
     print("Finished deephyper HPO.")

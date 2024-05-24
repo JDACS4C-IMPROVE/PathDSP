@@ -18,8 +18,12 @@ source $IMPROVE_env
 # Activate the current environement (module load, conda activate etc...)
 # Assume conda is installed
 module load PrgEnv-gnu
+module use /soft/modulefiles 
+module load conda
+# activate base environment
 conda_path=$(dirname $(dirname $(which conda)))
-source $conda_path/bin/activate $dh_env
+source $conda_path/bin/activate base
+#source $conda_path/bin/activate $dh_env
 
 # Resource allocation for DeepHyper
 export NDEPTH=16
@@ -49,6 +53,6 @@ echo PMI_LOCAL_RANK: ${PMI_LOCAL_RANK}
 # ensure that mpi is pointing to the one within deephyper conda environment
 # set_affinity_gpu_polaris.sh does not seem to work right now
 # but CUDA_VISIBLE_DEVICES was set within hpo_subprocess.py, 
-${dh_env}/bin/mpiexec -n ${NTOTRANKS} -host ${RANKS_HOSTS} \
+mpiexec -n ${NTOTRANKS} -host ${RANKS_HOSTS} \
     --envall \
     ./set_affinity_gpu_polaris.sh python hpo_subprocess.py
