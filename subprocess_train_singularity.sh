@@ -26,13 +26,15 @@ val_ml_data_dir=$2
 model_outdir=$3
 learning_rate=$4
 batch_size=$5
-CUDA_VISIBLE_DEVICES=$6
+dropout=$6
+CUDA_VISIBLE_DEVICES=$7
 
 echo "train_ml_data_dir:    $train_ml_data_dir"
 echo "val_ml_data_dir:      $val_ml_data_dir"
 echo "model_outdir:         $model_outdir"
 echo "learning_rate:      $learning_rate"
 echo "batch_size:      $batch_size"
+echo "dropout:      $dropout"
 echo "CUDA_VISIBLE_DEVICES: $CUDA_VISIBLE_DEVICES"
 
 # epochs=10
@@ -54,5 +56,5 @@ epochs=50
 #echo "Deactivated conda env $CONDA_ENV"
 
 echo "train using singularity container"
-singularity exec --nv --bind ${IMPROVE_DATA_DIR}:/candle_data_dir $PathDSP_sif train.sh ${CUDA_VISIBLE_DEVICES} /candle_data_dir --train_ml_data_dir /candle_data_dir/$train_ml_data_dir --val_ml_data_dir /candle_data_dir/$val_ml_data_dir/ --model_outdir /candle_data_dir/$model_outdir/ --epochs $epochs --learning_rate $learning_rate --batch_size $batch_size
+singularity exec --nv --bind ${IMPROVE_DATA_DIR}:/candle_data_dir $PathDSP_sif train.sh ${CUDA_VISIBLE_DEVICES} /candle_data_dir --train_ml_data_dir /candle_data_dir/$train_ml_data_dir --val_ml_data_dir /candle_data_dir/$val_ml_data_dir/ --model_outdir /candle_data_dir/$model_outdir/ --epochs $epochs --learning_rate $learning_rate --batch_size $batch_size --dropout $dropout
 

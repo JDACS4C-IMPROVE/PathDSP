@@ -63,7 +63,7 @@ problem = HpProblem()
 problem.add_hyperparameter((8, 512, "log-uniform"), "batch_size", default_value=8)
 problem.add_hyperparameter((1e-6, 1e-2, "log-uniform"),
                            "learning_rate", default_value=0.0004)
-# problem.add_hyperparameter((0, 0.5), "dropout", default_value=0.0)
+problem.add_hyperparameter((0, 0.5), "dropout", default_value=0.1)
 # problem.add_hyperparameter([True, False], "early_stopping", default_value=False)
 
 # ---------------------
@@ -94,6 +94,7 @@ def run(job, optuna_trial=None):
     model_outdir_job_id = model_outdir + f"/{job.id}"
     learning_rate = job.parameters["learning_rate"]
     batch_size = job.parameters["batch_size"]
+    dropout = job.parameters["dropout"]
     # val_scores = main_train_grapdrp([
     #     "--train_ml_data_dir", str(train_ml_data_dir),
     #     "--val_ml_data_dir", str(val_ml_data_dir),
@@ -107,6 +108,7 @@ def run(job, optuna_trial=None):
              str(model_outdir_job_id),
              str(learning_rate),
              str(batch_size),
+             str(dropout),
              str(os.environ["CUDA_VISIBLE_DEVICES"])
         ], 
         capture_output=True, text=True, check=True
