@@ -1,11 +1,12 @@
 #!/bin/bash
-#PBS -l select=2:system=polaris
+#PBS -l select=4:ncpus=64:ngpus=4:system=polaris
 #PBS -l place=scatter
-#PBS -l walltime=00:60:00
-#PBS -q debug
+#PBS -l walltime=00:30:00
+#PBS -q debug-scaling
 #PBS -A IMPROVE
 #PBS -l filesystems=home:eagle
 #PBS -N dh_hpo_scale_test
+#PBS -M liu.yuanhang@mayo.edu
 
 set -xe
 
