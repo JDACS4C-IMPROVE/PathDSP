@@ -36,7 +36,7 @@ echo "batch_size:      $batch_size"
 echo "CUDA_VISIBLE_DEVICES: $CUDA_VISIBLE_DEVICES"
 
 # epochs=10
-epochs=10
+epochs=50
 # epochs=50
 
 # All train outputs are saved in params["model_outdir"]
