@@ -60,17 +60,17 @@ logging.basicConfig(
 # ---------------------
 problem = HpProblem()
 
-problem.add_hyperparameter((8, 512, "log-uniform"), "batch_size", default_value=64)
+problem.add_hyperparameter((8, 512, "log-uniform"), "batch_size", default_value=8)
 problem.add_hyperparameter((1e-6, 1e-2, "log-uniform"),
-                           "learning_rate", default_value=0.001)
+                           "learning_rate", default_value=0.0004)
 # problem.add_hyperparameter((0, 0.5), "dropout", default_value=0.0)
 # problem.add_hyperparameter([True, False], "early_stopping", default_value=False)
 
 # ---------------------
 # Some IMPROVE settings
 # ---------------------
-source = "GDSCv1"
-split = 4
+source = "gCSI"
+split = 0
 train_ml_data_dir = f"ml_data/{source}-{source}/split_{split}"
 val_ml_data_dir = f"ml_data/{source}-{source}/split_{split}"
 model_outdir = f"dh_hpo_improve/{source}/split_{split}"
@@ -149,7 +149,7 @@ if __name__ == "__main__":
             # max_evals = 4
             # max_evals = 10
             # max_evals = 20
-            max_evals = 10
+            max_evals = 100
             # max_evals = 100
             results = search.search(max_evals=max_evals)
             results = results.sort_values("m:val_loss", ascending=True)
