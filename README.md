@@ -57,16 +57,7 @@ cp -r /lus/eagle/projects/IMPROVE_Aim1/yuanhangl_alcf/PathDSP/ml_data/ ./PathDSP
 ## python PathDSP/PathDSP_preprocess_improve.py --ml_data_outdir=./PathDSP/ml_data/GDSCv1-GDSCv1/split_4/
 ```
 
-## Perform HPO across two nodes based on conda
-
-```
-cd PathDSP
-# supply environment variables to qsub
-qsub -v IMPROVE_env=../IMPROVE_env ./hpo_scale.sh
-## for interactive node, you can run: mpirun -np 10 python hpo_subprocess.py
-```
-
-## Alternatively, perform HPO using singularity container across two nodes
+## Perform HPO using singularity container across two nodes
 
 ```
 ## copy processed to IMPROVE_DATA_DIR
@@ -74,6 +65,19 @@ cp -r /lus/eagle/projects/IMPROVE_Aim1/yuanhangl_alcf/PathDSP/ml_data/ $IMPROVE_
 ## specify singularity image file for PathDSP
 echo "export PathDSP_sif=/lus/eagle/projects/IMPROVE_Aim1/yuanhangl_alcf/PathDSP.sif" >> IMPROVE_env
 cd PathDSP
-qsub -v IMPROVE_env=../IMPROVE_env ./hpo_scale_singularity.sh
+## submit to debug queue
+qsub -v IMPROVE_env=../IMPROVE_env ./hpo_scale_singularity_debug.sh
+## to submit to debug-scaling or prod queue
+## use hpo_scale_singularity_debug_scaling.sh 
+## or hpo_scale_singularity_prod.sh
 ## for interative node, run: mpirun -np 10 python hpo_subprocess_singularity.py
+```
+
+## Alternatively, perform HPO across two nodes based on conda
+
+```
+cd PathDSP
+# supply environment variables to qsub
+qsub -v IMPROVE_env=../IMPROVE_env ./hpo_scale.sh
+## for interactive node, you can run: mpirun -np 10 python hpo_subprocess.py
 ```
