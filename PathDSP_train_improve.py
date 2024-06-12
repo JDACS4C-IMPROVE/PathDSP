@@ -248,7 +248,7 @@ def run(params):
     params =  preprocess(params)
     
     # set parameters
-    myutil.set_seed(params["seed_int"])
+    #myutil.set_seed(params["seed_int"])
     ## set device
     cuda_env_visible = os.getenv("CUDA_VISIBLE_DEVICES")
     if cuda_env_visible is not None:

@@ -69,7 +69,7 @@ problem.add_hyperparameter((0, 0.5), "dropout", default_value=0.1)
 # ---------------------
 # Some IMPROVE settings
 # ---------------------
-source = "gCSI"
+source = "GDSCv1"
 split = 0
 train_ml_data_dir = f"ml_data/{source}-{source}/split_{split}"
 val_ml_data_dir = f"ml_data/{source}-{source}/split_{split}"
