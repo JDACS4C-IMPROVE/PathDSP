@@ -15,3 +15,6 @@ train_gpu_util.sh
 
 ## image
 PathDSP.sif
+
+## log files
+dh_hpo_scale_test.*
