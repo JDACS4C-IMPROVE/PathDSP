@@ -6,3 +6,15 @@ ml_data/
 dh_hpo_improve/
 dh_hpo_logs/
 
+## gpu utilization
+PathDSP_gpu_util_model.txt
+gpu_log_strip.txt
+gpu_logs.txt
+out_models/
+train_gpu_util.sh
+
+## image
+PathDSP.sif
+
+## log files
+dh_hpo_scale_test.*
