@@ -1,10 +1,11 @@
-import candle
 import os
 import sys
 import datetime
 # IMPROVE/CANDLE imports
-from improve import framework as frm
-from improve.metrics import compute_metrics
+#from improve import framework as frm
+#from improve.metrics import compute_metrics
+from improvelib.applications.drug_response_prediction.config import DRPTrainConfig #NCK
+import improvelib.utils as frm #NCK
 #from model_utils.torch_utils import predicting
 #import json
 #from json import JSONEncoder
@@ -344,13 +345,8 @@ def main(args):
     additional_definitions = model_preproc_params + \
                             model_train_params + \
                             app_train_params
-    params = frm.initialize_parameters(
-        file_path,
-        default_model="PathDSP_default_model.txt",
-        #default_model="PathDSP_cs_model.txt",
-        additional_definitions=additional_definitions,
-        required=None,
-    )
+    #params = frm.initialize_parameters(file_path, default_model="PathDSP_default_model.txt", additional_definitions=additional_definitions, required=None)
+    params = cfg.initialize_parameters(file_path, default_config="PathDSP_default_model.txt", additional_definitions=additional_definitions, required=None) #NCK
     # get node name
     params["node_name"] = socket.gethostname()
     val_scores = run(params)
