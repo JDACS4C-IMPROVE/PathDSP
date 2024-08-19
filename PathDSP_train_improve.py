@@ -346,6 +346,7 @@ def main(args):
                             model_train_params + \
                             app_train_params
     #params = frm.initialize_parameters(file_path, default_model="PathDSP_default_model.txt", additional_definitions=additional_definitions, required=None)
+    cfg = DRPTrainConfig() #NCK
     params = cfg.initialize_parameters(file_path, default_config="PathDSP_default_model.txt", additional_definitions=additional_definitions, required=None) #NCK
     # get node name
     params["node_name"] = socket.gethostname()

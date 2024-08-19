@@ -509,6 +509,7 @@ def run(params):
 
 def main(args):
     #params = frm.initialize_parameters(file_path, default_model="PathDSP_default_model.txt", additional_definitions=preprocess_params, required=req_preprocess_args)
+    cfg = DRPPreprocessConfig() #NCK
     params = cfg.initialize_parameters(file_path, default_config="PathDSP_default_model.txt", additional_definitions=preprocess_params, required=req_preprocess_args)
     run(params)
 
