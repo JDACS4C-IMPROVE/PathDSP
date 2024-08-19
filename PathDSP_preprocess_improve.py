@@ -5,10 +5,16 @@ import polars as pl
 import argparse
 import numpy as np
 import pandas as pd
-import candle
+#import candle
 from functools import reduce
-from improve import drug_resp_pred as drp
-from improve import framework as frm
+#from improve import drug_resp_pred as drp
+#from improve import framework as frm
+from improvelib.applications.drug_response_prediction.config import DRPPreprocessConfig #NCK
+from improvelib.utils import str2bool #NCK
+import improvelib.utils as frm #NCK
+import improvelib.applications.drug_response_prediction.drug_utils as drugs #NCK
+import improvelib.applications.drug_response_prediction.omics_utils as omics #NCK
+import improvelib.applications.drug_response_prediction.drp_utils as drp #NCK
 from pathlib import Path
 from rdkit import Chem
 from rdkit.Chem import AllChem
@@ -153,7 +159,7 @@ def smile2bits(params):
     response_df = [response_out(params, params[split_file]) for split_file in ["train_split_file", "test_split_file", "val_split_file"]]
     response_df = pd.concat(response_df, ignore_index=True)
 
-    smile_df = drp.DrugsLoader(params)
+    smile_df = drugs.DrugsLoader(params)
     
     smile_df = smile_df.dfs['drug_SMILES.tsv']
     smile_df = smile_df.reset_index()
@@ -229,7 +235,7 @@ def run_netpea(params, dtype, multiply_expression):
     cpu_int = params["cpu_int"]
     response_df = [response_out(params, params[split_file]) for split_file in ["train_split_file", "test_split_file", "val_split_file"]]
     response_df = pd.concat(response_df, ignore_index=True)
-    omics_data = drp.OmicsLoader(params)
+    omics_data = omics.OmicsLoader(params)
 
     if dtype == "DGnet":
         drug_info = pd.read_csv(os.environ["IMPROVE_DATA_DIR"] + "/raw_data/x_data/drug_info.tsv", sep="\t")
@@ -434,7 +440,7 @@ def run_ssgsea(params):
     #     canc_col_name="improve_sample_id",
     #     gene_system_identifier="Gene_Symbol",
     # )
-    omics_data = drp.OmicsLoader(params)
+    omics_data = omics.OmicsLoader(params)
     expMat = omics_data.dfs['cancer_gene_expression.tsv']
     expMat = expMat.set_index(params['canc_col_name'])
 
@@ -502,13 +508,8 @@ def run(params):
 
 
 def main(args):
-    params = frm.initialize_parameters(
-        file_path,
-        default_model="PathDSP_default_model.txt",
-        #default_model="PathDSP_cs_model.txt",
-        additional_definitions=preprocess_params,
-        required=req_preprocess_args,
-    )
+    #params = frm.initialize_parameters(file_path, default_model="PathDSP_default_model.txt", additional_definitions=preprocess_params, required=req_preprocess_args)
+    params = cfg.initialize_parameters(file_path, default_config="PathDSP_default_model.txt", additional_definitions=preprocess_params, required=req_preprocess_args)
     run(params)
 
 
