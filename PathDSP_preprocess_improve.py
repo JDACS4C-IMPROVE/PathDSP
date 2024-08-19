@@ -491,6 +491,7 @@ def run_ssgsea(params):
 
 def run(params):
     params = frm.build_paths(params)
+    params["ml_data_outdir"] = params["output_dir"] #NCK
     frm.create_outdir(outdir=params["ml_data_outdir"])
     params = preprocess(params)
     print("convert drug to bits.")
