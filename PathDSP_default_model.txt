@@ -26,6 +26,7 @@ val_ml_data_dir = "./ml_data/GDSCv1-GDSCv1/split_4"
 model_outdir = "./out_models/GDSCv1/split_4"
 model_file_name = "model"
 model_file_format = ".pt"
+data_format = ".txt"
 epochs=3
 batch_size = 12
 val_batch = 12
