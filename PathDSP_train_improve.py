@@ -243,6 +243,7 @@ def fit(net, train_dl, valid_dl, epochs, learning_rate, device, opt_fn, params):
 
 def run(params):
     params["model_outdir"] = params["output_dir"] #NCK
+    params["ml_data_outdir"] = params["input_dir"] #NCK
     frm.create_outdir(outdir=params["model_outdir"])
     modelpath = frm.build_model_path(params, model_dir=params["model_outdir"])
     train_data_fname = frm.build_ml_data_name(params, stage="train")
