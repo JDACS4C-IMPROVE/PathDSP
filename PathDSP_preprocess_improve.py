@@ -238,7 +238,7 @@ def run_netpea(params, dtype, multiply_expression):
     omics_data = omics.OmicsLoader(params)
 
     if dtype == "DGnet":
-        drug_info = pd.read_csv(os.environ["IMPROVE_DATA_DIR"] + "/raw_data/x_data/drug_info.tsv", sep="\t")
+        drug_info = pd.read_csv(os.environ["IMPROVE_DATA_DIR"] + "/x_data/drug_info.tsv", sep="\t")
         drug_info["NAME"] = drug_info["NAME"].str.upper()
         target_info = pd.read_csv(
             params["author_data_dir"] + "/data/DB.Drug.Target.txt", sep="\t"
