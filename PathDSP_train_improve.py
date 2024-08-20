@@ -270,8 +270,8 @@ def run(params):
     # [PathDSP] Prepare dataloaders
     # ------------------------------------------------------
     print('loadinig data')
-    train_df = pl.read_csv(params["ml_data_dir"] + "/" + train_data_fname, separator = "\t").to_pandas()
-    val_df = pl.read_csv(params["ml_data_dir"] + "/" + val_data_fname, separator = "\t").to_pandas()
+    train_df = pl.read_csv(params["input_dir"] + "/" + train_data_fname, separator = "\t").to_pandas()
+    val_df = pl.read_csv(params["input_dir"] + "/" + val_data_fname, separator = "\t").to_pandas()
     Xtrain_arr = train_df.iloc[:, 0:-1].values
     Xvalid_arr = val_df.iloc[:, 0:-1].values
     ytrain_arr = train_df.iloc[:, -1].values
