@@ -44,3 +44,4 @@ infer_outdir = ./out_infer/GDSCv1-GDSCv1/split_4
 test_batch = 256
 model_file_name = model
 model_file_format = .pt
+data_format = .txt
