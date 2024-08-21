@@ -44,6 +44,7 @@ model_infer_params = []
 def run(params):
     params["infer_outdir"] = params["output_dir"]
     params["test_ml_data_dir"] = params["input_dir"]
+    params["ml_data_outdir"] = params["input_dir"]
     params["model_dir"] = params["input_dir"]
     frm.create_outdir(outdir=params["infer_outdir"])
     params =  preprocess(params)
