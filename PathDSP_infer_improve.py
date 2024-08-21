@@ -1,4 +1,3 @@
-import candle
 import os
 import sys
 #import json
@@ -20,9 +19,11 @@ import myDataloader as mydl
 import myDatasplit as mysplit
 import myUtility as myutil
 
-from improve import framework as frm
+#from improve import framework as frm
 # from improve.torch_utils import TestbedDataset
-from improve.metrics import compute_metrics
+#from improve.metrics import compute_metrics
+from improvelib.applications.drug_response_prediction.config import DRPInferConfig #NCK
+import improvelib.utils as frm #NCK
 
 from PathDSP_train_improve import (
     preprocess,
@@ -41,6 +42,9 @@ app_infer_params = []
 model_infer_params = []
 
 def run(params):
+    params["infer_outdir"] = params["output_dir"]
+    params["test_ml_data_dir"] = params["input_dir"]
+    params["model_dir"] = params["input_dir"]
     frm.create_outdir(outdir=params["infer_outdir"])
     params =  preprocess(params)
     test_data_fname = frm.build_ml_data_name(params, stage="test")
@@ -75,17 +79,13 @@ def run(params):
     return test_scores
 
 def main(args):
+    cfg = DRPInferConfig() #NCK
     additional_definitions = model_preproc_params + \
                              model_train_params + \
                              model_infer_params + \
                              app_infer_params
-    params = frm.initialize_parameters(
-        file_path,
-        default_model="PathDSP_default_model.txt",
-        #default_model="PathDSP_cs_model.txt",
-        additional_definitions=additional_definitions,
-        required=None,
-    )
+    #params = frm.initialize_parameters(file_path, default_model="PathDSP_default_model.txt", additional_definitions=additional_definitions, required=None)
+    params = cfg.initialize_parameters(file_path, default_config="PathDSP_default_model.txt", additional_definitions=additional_definitions, required=None) #NCK
     test_scores = run(params)
     print("\nFinished inference of PathDSP model.")
 
