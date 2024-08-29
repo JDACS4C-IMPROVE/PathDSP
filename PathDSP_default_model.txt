@@ -5,7 +5,7 @@ model_name='PathDSP'
 train_split_file = GDSCv1_split_4_train.txt
 val_split_file = GDSCv1_split_4_val.txt
 test_split_file = GDSCv1_split_4_test.txt
-ml_data_outdir = ./ml_data/GDSCv1-GDSCv1/split_4
+# ml_data_outdir = ./ml_data/GDSCv1-GDSCv1/split_4
 x_data_canc_files = [["cancer_gene_expression.tsv", ["Gene_Symbol"]], ["cancer_mutation_count.tsv",["Gene_Symbol"]], ["cancer_discretized_copy_number.tsv", ["Gene_Symbol"]]]
 x_data_drug_files = [["drug_SMILES.tsv"]]
 y_data_files = [["response.tsv"]]
@@ -19,6 +19,7 @@ bit_int = 128
 permutation_int = 3
 seed_int = 42
 cpu_int = 20
+input_supp_data_dir = ../author_data
 
 [Train]
 train_ml_data_dir = ./ml_data/GDSCv1-GDSCv1/split_4

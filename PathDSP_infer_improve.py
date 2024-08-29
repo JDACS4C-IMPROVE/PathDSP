@@ -1,61 +1,47 @@
 import os
 import sys
-#import json
-#from json import JSONEncoder
-from PathDSP_preprocess_improve import mkdir, preprocess
-from PathDSP_train_improve import predicting
 import numpy as np
 import pandas as pd
 from datetime import datetime
 import torch as tch
 import torch.utils.data as tchud
 import polars as pl
-import sklearn.metrics as skmts
-#sys.path.append("/usr/local/PathDSP/PathDSP")
-#sys.path.append("/usr/local/PathDSP/PathDSP")
-#sys.path.append(os.getcwd() + "/PathDSP")
 import myModel as mynet
 import myDataloader as mydl
-import myDatasplit as mysplit
 import myUtility as myutil
 
-#from improve import framework as frm
-# from improve.torch_utils import TestbedDataset
-#from improve.metrics import compute_metrics
-from improvelib.applications.drug_response_prediction.config import DRPInferConfig #NCK
-import improvelib.utils as frm #NCK
-
+from PathDSP_preprocess_improve import mkdir, preprocess
 from PathDSP_train_improve import (
+    predicting,
     preprocess,
     cal_time,
     metrics_list,
-    model_preproc_params,
-    model_train_params,
 )
+from improvelib.applications.drug_response_prediction.config import DRPInferConfig #NCK
+import improvelib.utils as frm #NCK
 
 file_path = os.path.dirname(os.path.realpath(__file__))
 
-# [Req] App-specific params
-app_infer_params = []
-
-# [PathDSP] Model-specific params (Model: PathDSP)
-model_infer_params = []
 
 def run(params):
-    params["infer_outdir"] = params["output_dir"]
-    params["test_ml_data_dir"] = params["input_dir"]
-    params["ml_data_outdir"] = params["input_dir"]
-    params["model_dir"] = params["input_dir"]
-    frm.create_outdir(outdir=params["infer_outdir"])
+    if "input_data_dir" in params:
+        data_dir = params["input_data_dir"]
+    else:
+        data_dir = params["input_dir"]
+    if "input_model_dir" in params:
+        model_dir = params["input_model_dir"]
+    else:
+        model_dir = params["input_dir"]    
+    frm.create_outdir(outdir=params["output_dir"])
     params =  preprocess(params)
     test_data_fname = frm.build_ml_data_name(params, stage="test")
-    test_df = pl.read_csv(params["test_ml_data_dir"] + "/" + test_data_fname, separator = "\t").to_pandas()
+    test_df = pl.read_csv(data_dir + "/" + test_data_fname, separator = "\t").to_pandas()
     Xtest_arr = test_df.iloc[:, 0:-1].values
     ytest_arr = test_df.iloc[:, -1].values
     Xtest_arr = np.array(Xtest_arr).astype('float32')
     ytest_arr = np.array(ytest_arr).astype('float32')
     trained_net = mynet.FNN(Xtest_arr.shape[1])
-    modelpath = frm.build_model_path(params, model_dir=params["model_dir"])
+    modelpath = frm.build_model_path(params, model_dir=model_dir)
     trained_net.load_state_dict(tch.load(modelpath))
     trained_net.eval()
     myutil.set_seed(params["seed_int"])
@@ -70,23 +56,18 @@ def run(params):
     test_true, test_pred = predicting(trained_net, device, data_loader=test_dl)
     frm.store_predictions_df(
         params, y_true=test_true, y_pred=test_pred, stage="test",
-        outdir=params["infer_outdir"]
+        outdir=params["output_dir"]
     )
     test_scores = frm.compute_performace_scores(
         params, y_true=test_true, y_pred=test_pred, stage="test",
-        outdir=params["infer_outdir"], metrics=metrics_list
+        outdir=params["output_dir"], metrics=metrics_list
     )
     print('Inference time :[Finished in {:}]'.format(cal_time(datetime.now(), start)))
     return test_scores
 
 def main(args):
     cfg = DRPInferConfig() #NCK
-    additional_definitions = model_preproc_params + \
-                             model_train_params + \
-                             model_infer_params + \
-                             app_infer_params
-    #params = frm.initialize_parameters(file_path, default_model="PathDSP_default_model.txt", additional_definitions=additional_definitions, required=None)
-    params = cfg.initialize_parameters(file_path, default_config="PathDSP_default_model.txt", additional_definitions=additional_definitions, required=None) #NCK
+    params = cfg.initialize_parameters(file_path, default_config="PathDSP_default_model.txt", additional_definitions=None, required=None) #NCK
     test_scores = run(params)
     print("\nFinished inference of PathDSP model.")
 
