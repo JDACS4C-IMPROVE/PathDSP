@@ -9,7 +9,7 @@ import torch as tch
 import torch.utils.data as tchud
 import sklearn.model_selection as skms
 import sklearn.preprocessing as skpre
-import myDatasplit as mysplit
+import model_utils.myDatasplit as mysplit
 
 class NumpyDataset(tchud.Dataset):
     """
