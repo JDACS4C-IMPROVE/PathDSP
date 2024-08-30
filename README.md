@@ -1,181 +1,166 @@
 # PathDSP
-Explainable Drug Sensitivity Prediction through Cancer Pathway Enrichment Scores
 
-# Download benchmark data
+This repository demonstrates how to use the [IMPROVE library v0.0.3-beta](https://github.com/JDACS4C-IMPROVE/IMPROVE/tree/v0.0.3-beta) for building a drug response prediction (DRP) model using PathDSP, and provides examples with the benchmark [cross-study analysis (CSA) dataset](https://web.cels.anl.gov/projects/IMPROVE_FTP/candle/public/improve/benchmarks/single_drug_drp/benchmark-data-pilot1/csa_data/).
 
-Download the cross-study analysis (CSA) benchmark data into the model directory from https://web.cels.anl.gov/projects/IMPROVE_FTP/candle/public/improve/benchmarks/single_drug_drp/benchmark-data-pilot1/
+This version, tagged as `v0.0.3-beta`, is the final release before transitioning to `v0.1.0-alpha`, which introduces a new API. Version `v0.0.3-beta` and all previous releases have served as the foundation for developing essential components of the IMPROVE software stack. Subsequent releases build on this legacy with an updated API, designed to encourage broader adoption of IMPROVE and its curated models by the research community.
 
+A more detailed tutorial can be found [here](https://jdacs4c-improve.github.io/docs/v0.0.3-beta/content/ModelContributorGuide.html).
+
+
+## Dependencies
+Installation instuctions are detailed below in [Step-by-step instructions](#step-by-step-instructions).
+
+Conda `yml` file [environment_082223.yml](./environment_082223.yml)
+
+ML framework:
++ [Torch](https://pytorch.org/) -- deep learning framework for building the prediction model
+
+IMPROVE dependencies:
++ [IMPROVE v0.0.3-beta](https://github.com/JDACS4C-IMPROVE/IMPROVE/tree/v0.0.3-beta)
++ [candle_lib](https://github.com/ECP-CANDLE/candle_lib) - IMPROVE dependency (enables various hyperparameter optimization on HPC machines) 
+
+
+
+## Dataset
+Benchmark data for cross-study analysis (CSA) can be downloaded from this [site](https://web.cels.anl.gov/projects/IMPROVE_FTP/candle/public/improve/benchmarks/single_drug_drp/benchmark-data-pilot1/csa_data/).
+
+The data tree is shown below:
 ```
-mkdir process_dir
-cd process_dir
-wget --cut-dirs=7 -P ./ -nH -np -m ftp://ftp.mcs.anl.gov/pub/candle/public/improve/benchmarks/single_drug_drp/benchmark-data-pilot1/csa_data
+csa_data/raw_data/
+├── splits
+│   ├── CCLE_all.txt
+│   ├── CCLE_split_0_test.txt
+│   ├── CCLE_split_0_train.txt
+│   ├── CCLE_split_0_val.txt
+│   ├── CCLE_split_1_test.txt
+│   ├── CCLE_split_1_train.txt
+│   ├── CCLE_split_1_val.txt
+│   ├── ...
+│   ├── GDSCv2_split_9_test.txt
+│   ├── GDSCv2_split_9_train.txt
+│   └── GDSCv2_split_9_val.txt
+├── x_data
+│   ├── cancer_copy_number.tsv
+│   ├── cancer_discretized_copy_number.tsv
+│   ├── cancer_DNA_methylation.tsv
+│   ├── cancer_gene_expression.tsv
+│   ├── cancer_miRNA_expression.tsv
+│   ├── cancer_mutation_count.tsv
+│   ├── cancer_mutation_long_format.tsv
+│   ├── cancer_mutation.parquet
+│   ├── cancer_RPPA.tsv
+│   ├── drug_ecfp4_nbits512.tsv
+│   ├── drug_info.tsv
+│   ├── drug_mordred_descriptor.tsv
+│   └── drug_SMILES.tsv
+└── y_data
+    └── response.tsv
 ```
 
-Benchmark data will be downloaded under `process_dir/csa_data/`
 
-# Example usage with Conda
+## Model scripts and parameter file
++ `PathDSP_preprocess_improve.py` - takes benchmark data files and transforms into files for training and inference
++ `PathDSP_train_improve.py` - trains the PathDSP model
++ `PathDSP_infer_improve.py` - runs inference with the trained PathDSP model
++ `PathDSP_default_model.txt` - default parameter file
 
-Download PathDSP and IMPROVE
 
+
+# Step-by-step instructions
+
+### 1. Clone the model repository
 ```
-mkdir repo
-cd repo
-git clone -b develop https://github.com/JDACS4C-IMPROVE/PathDSP.git
-git clone -b develop https://github.com/JDACS4C-IMPROVE/IMPROVE.git
-```
-
-# Download author data
-
-```
-cd ../
-mkdir author_data
-bash repo/PathDSP/download_author_data.sh author_data/
+git clone https://github.com/JDACS4C-IMPROVE/PathDSP
+cd PathDSP
+git checkout v0.0.3-beta
 ```
 
-Author data will be downloaded under `process_dir/author_data/`
-PathDSP will be installed at `process_dir/repo/PathDSP`
-IMPROVE will be installed at `process_dir/repo/IMPROVE`
 
-Create environment
-
+### 2. Set computational environment
+Create conda env using `yml`
 ```
-cd repo/PathDSP/
 conda env create -f environment_082223.yml -n PathDSP_env
 ```
 
-Activate environment
 
-```
-conda activate PathDSP_env
-```
-
-Install CANDLE package
-
-```
-pip install git+https://github.com/ECP-CANDLE/candle_lib@develop
+### 3. Run `setup_improve.sh`.
+```bash
+source setup_improve.sh
 ```
 
-Define enviroment variabels
+This will:
+1. Download cross-study analysis (CSA) benchmark data into `./csa_data/`.
+2. Clone IMPROVE repo (checkout tag `v0.0.3-beta`) outside the PathDSP model repo
+3. Set up env variables: `IMPROVE_DATA_DIR` (to `./csa_data/`) and `PYTHONPATH` (adds IMPROVE repo).
+4. Download the model-specific supplemental data (aka author data) and set up the env variable `AUTHOR_DATA_DIR`.
 
-```
-improve_lib="/path/to/IMPROVE/repo/"
-pathdsp_lib="/path/to/pathdsp/repo/"
-# notice the extra PathDSP folder after pathdsp_lib
-export PYTHONPATH=$PYTHONPATH:${improve_lib}:${pathdsp_lib}/PathDSP/
-export IMPROVE_DATA_DIR="/path/to/csa_data/"
-export AUTHOR_DATA_DIR="/path/to/author_data/"
-```
 
-Perform preprocessing step
-
-```
-# go two upper level
-cd ../../
-python repo/PathDSP/PathDSP_preprocess_improve.py
+### 4. Preprocess CSA benchmark data (_raw data_) to construct model input data (_ML data_)
+```bash
+python PathDSP_preprocess_improve.py
 ```
 
-Train the model
+Preprocesses the CSA data and creates train, validation (val), and test datasets.
+
+Generates:
+* three model input data files: `train_data.pt`, `val_data.pt`, `test_data.pt`
+* three tabular data files, each containing the drug response values (i.e. AUC) and corresponding metadata: `train_y_data.csv`, `val_y_data.csv`, `test_y_data.csv`
 
 ```
-python repo/PathDSP/PathDSP_train_improve.py
+ml_data
+└── GDSCv1-CCLE
+    └── split_0
+        ├── tmpdir_ssgsea
+        ├── EXP.txt
+        ├── cnv_data.txt
+        ├── CNVnet.txt
+        ├── DGnet.txt
+        ├── MUTnet.txt
+        ├── drug_mbit_df.txt
+        ├── drug_target.txt
+        ├── mutation_data.txt 
+        ├── test_data.txt
+        ├── train_data.txt
+        ├── val_data.txt
+        └── x_data_gene_expression_scaler.gz
 ```
 
-Metrics regarding validation scores is located at: `${train_ml_data_dir}/val_scores.json`
-Final trained model is located at: `${train_ml_data_dir}/model.pt`. Parameter definitions can be found at `process_dir/repo/PathDSP/PathDSP_default_model.txt`
 
-Perform inference on the testing data
-
-```
-python repo/PathDSP/PathDSP_infer_improve.py
+### 5. Train PathDSP model
+```bash
+python PathDSP_train_improve.py
 ```
 
-Metrics regarding test process is located at: `${infer_outdir}/test_scores.json`
-Final prediction on testing data is located at: `${infer_outdir}/test_y_data_predicted.csv`
+Trains PathDSP using the model input data: `train_data.pt` (training), `val_data.pt` (for early stopping).
 
-# Example usage with singularity container
-
-# Download benchmark data
-
-Download the cross-study analysis (CSA) benchmark data into the model directory from https://web.cels.anl.gov/projects/IMPROVE_FTP/candle/public/improve/benchmarks/single_drug_drp/benchmark-data-pilot1/
-
+Generates:
+* trained model: `model.pt`
+* predictions on val data (tabular data): `val_y_data_predicted.csv`
+* prediction performance scores on val data: `val_scores.json`
 ```
-mkdir process_dir
-cd process_dir
-wget --cut-dirs=7 -P ./ -nH -np -m ftp://ftp.mcs.anl.gov/pub/candle/public/improve/benchmarks/single_drug_drp/benchmark-data-pilot1/csa_data
-```
-
-# Download author data
-
-Download model specific data under csa_data/ directory
-
-```
-git clone -b develop https://github.com/JDACS4C-IMPROVE/PathDSP.git
-bash PathDSP/download_author_data.sh csa_data/
+out_models
+└── gCSI
+    └── split_0
+        ├── model.pt
+        ├── checkpoint.pt
+        ├── Val_Loss_orig.txt
+        ├── val_scores.json
+        └── val_y_data_predicted.csv
 ```
 
-Setup Singularity
 
+### 6. Run inference on test data with the trained model
+```python PathDSP_infer_improve.py```
+
+Evaluates the performance on a test dataset with the trained model.
+
+Generates:
+* predictions on test data (tabular data): `test_y_data_predicted.csv`
+* prediction performance scores on test data: `test_scores.json`
 ```
-git clone -b develop https://github.com/JDACS4C-IMPROVE/Singularity.git
-cd Singularity
-./setup
-source config/improve.env
+out_infer
+└── gCSI-gCSI
+    └── split_0
+        ├── test_scores.json
+        └── test_y_data_predicted.csv
 ```
-
-Build Singularity from definition file
-
-```
-singularity build --fakeroot PathDSP.sif definitions/PathDSP.def
-```
-
-Perform preprocessing using csa benchmarking data
-
-```
-singularity exec --nv --bind ${IMPROVE_DATA_DIR}:/candle_data_dir PathDSP.sif preprocess.sh /candle_data_dir --ml_data_outdir /candle_data_dir/preprocess_data/
-```
-
-Train the model
-
-```
-singularity exec --nv --bind ${IMPROVE_DATA_DIR}:/candle_data_dir PathDSP.sif train.sh 0 /candle_data_dir --train_ml_data_dir /candle_data_dir/preprocess_data/ --val_ml_data_dir /candle_data_dir/preprocess_data/ --model_outdir /candle_data_dir/out_model/
-```
-
-Metrics regarding validation scores is located at: `${train_ml_data_dir}/val_scores.json`
-Final trained model is located at: `${train_ml_data_dir}/model.pt`. 
-
-Perform inference on the testing data
-
-```
-singularity exec --nv --bind ${IMPROVE_DATA_DIR}:/candle_data_dir PathDSP.sif infer.sh 0 /candle_data_dir --test_ml_data_dir /candle_data_dir/preprocess_data/ --model_dir /candle_data_dir/out_model/ --infer_outdir /candle_data_dir/out_infer/
-```
-
-Metrics regarding test process is located at: `${infer_outdir}/test_scores.json`
-Final prediction on testing data is located at: `${infer_outdir}/test_y_data_predicted.csv`
-
-
-# Docs from original authors (below)
-
-# Requirments
-
-# Input format
-
-|drug|cell|feature_1|....|feature_n|drug_response|
-|----|----|--------|----|--------|----|
-|5-FU|03|0|....|0.02|-2.3|
-|5-FU|23|1|....|0.04|-3.4|
-
-Where feature_1 to feature_n are the pathway enrichment scores and the chemical fingerprint coming from data processing
-# Usage:
-```python
-# run FNN 
-python ./PathDSP/PathDSP/FNN.py -i input.txt -o ./output_prefix
-
-Where input.txt should be in the input format shown above. 
-Example input file can be found at https://zenodo.org/record/7532963
-```
-# Data preprocessing
-Pathway enrichment scores for categorical data (i.e., mutation, copy number variation, and drug targets) were obtained by running the NetPEA algorithm, which is available at: https://github.com/TangYiChing/NetPEA, while pathway enrichment scores for numeric data (i.e., gene expression) was generated with the single-sample Gene Set Enrichment Analsysis (ssGSEA) available here: https://gseapy.readthedocs.io/en/master/gseapy_example.html#3)-command-line-usage-of-single-sample-gseaby 
-
-
-# Reference
-Tang, Y.-C., & Gottlieb, A. (2021). Explainable drug sensitivity prediction through cancer pathway enrichment. Scientific Reports, 11(1), 3128. https://doi.org/10.1038/s41598-021-82612-7
