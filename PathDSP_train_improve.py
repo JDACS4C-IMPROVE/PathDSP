@@ -6,9 +6,9 @@ from datetime import datetime
 import socket
 import torch as tch
 import torch.utils.data as tchud
-import myModel as mynet
-import myDataloader as mydl
-import myUtility as myutil
+import model_utils.myModel as mynet
+import model_utils.myDataloader as mydl
+import model_utils.myUtility as myutil
 import polars as pl
 
 from improvelib.applications.drug_response_prediction.config import DRPTrainConfig #NCK
