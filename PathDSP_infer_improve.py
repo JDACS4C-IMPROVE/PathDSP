@@ -6,9 +6,9 @@ from datetime import datetime
 import torch as tch
 import torch.utils.data as tchud
 import polars as pl
-import myModel as mynet
-import myDataloader as mydl
-import myUtility as myutil
+import model_utils.myModel as mynet
+import model_utils.myDataloader as mydl
+import model_utils.myUtility as myutil
 
 from PathDSP_preprocess_improve import mkdir, preprocess
 from PathDSP_train_improve import (
@@ -33,7 +33,7 @@ def run(params):
     else:
         model_dir = params["input_dir"]    
     frm.create_outdir(outdir=params["output_dir"])
-    params =  preprocess(params)
+    #params =  preprocess(params)
     test_data_fname = frm.build_ml_data_name(params, stage="test")
     test_df = pl.read_csv(data_dir + "/" + test_data_fname, separator = "\t").to_pandas()
     Xtest_arr = test_df.iloc[:, 0:-1].values
@@ -58,7 +58,7 @@ def run(params):
         params, y_true=test_true, y_pred=test_pred, stage="test",
         outdir=params["output_dir"]
     )
-    test_scores = frm.compute_performace_scores(
+    test_scores = frm.compute_performance_scores(
         params, y_true=test_true, y_pred=test_pred, stage="test",
         outdir=params["output_dir"], metrics=metrics_list
     )
