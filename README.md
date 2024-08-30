@@ -104,12 +104,11 @@ python PathDSP_preprocess_improve.py
 Preprocesses the CSA data and creates train, validation (val), and test datasets.
 
 Generates:
-* three model input data files: `train_data.pt`, `val_data.pt`, `test_data.pt`
-* three tabular data files, each containing the drug response values (i.e. AUC) and corresponding metadata: `train_y_data.csv`, `val_y_data.csv`, `test_y_data.csv`
+* three model input data files: `train_data.txt`, `val_data.txt`, `test_data.txt`
 
 ```
 ml_data
-└── GDSCv1-CCLE
+└── gCSI
     └── split_0
         ├── tmpdir_ssgsea
         ├── EXP.txt
@@ -132,7 +131,7 @@ ml_data
 python PathDSP_train_improve.py
 ```
 
-Trains PathDSP using the model input data: `train_data.pt` (training), `val_data.pt` (for early stopping).
+Trains PathDSP using the model input data: `train_data.txt` (training), `val_data.txt` (for early stopping).
 
 Generates:
 * trained model: `model.pt`
