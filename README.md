@@ -80,6 +80,7 @@ git checkout v0.0.3-beta
 Create conda env using `yml`
 ```
 conda env create -f environment_082223.yml -n PathDSP_env
+conda activate PathDSP_env
 ```
 
 
