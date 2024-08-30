@@ -205,7 +205,7 @@ def run(params):
     modelpath = frm.build_model_path(params, model_dir=params["output_dir"])
     train_data_fname = frm.build_ml_data_name(params, stage="train")
     val_data_fname = frm.build_ml_data_name(params, stage="val")
-    params =  preprocess(params)
+    #params =  preprocess(params)
     
     # set parameters
     #myutil.set_seed(params["seed_int"])

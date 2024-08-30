@@ -10,11 +10,11 @@ bit_int = 128
 permutation_int = 3
 seed_int = 42
 cpu_int = 20
-drug_bits_file='drug_mbit_df.txt'
-dgnet_file='DGnet.txt'
-mutnet_file='MUTnet.txt'
-cnvnet_file='CNVnet.txt'
-exp_file='EXP.txt'
+drug_bits_file = drug_mbit_df.txt
+dgnet_file = DGnet.txt
+mutnet_file = MUTnet.txt
+cnvnet_file = CNVnet.txt
+exp_file = EXP.txt
 
 [Train]
 epochs = 800
