@@ -50,12 +50,8 @@ pathdsp_train_params = [
     {"name": "cuda_name",  # TODO. frm. How should we control this?
      "action": "store",
      "type": str,
-     "help": "Cuda device (e.g.: cuda:0, cuda:1."},
-    {"name": "learning_rate",
-     "type": float,
-     "default": 0.0001,
-     "help": "Learning rate for the optimizer."
-    },
+     "help": "Cuda device (e.g.: cuda:0, cuda:1."
+     },
     {"name": "dropout",
      "type": float,
      "default": 0.1,
