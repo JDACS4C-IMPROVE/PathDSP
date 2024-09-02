@@ -81,6 +81,7 @@ Create conda env using `yml`
 ```
 conda env create -f environment_082223.yml -n PathDSP_env
 conda activate PathDSP_env
+pip install git+https://github.com/ECP-CANDLE/candle_lib@develop
 ```
 
 
