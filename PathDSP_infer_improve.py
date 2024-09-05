@@ -13,9 +13,7 @@ import model_utils.myUtility as myutil
 from PathDSP_preprocess_improve import mkdir, preprocess
 from PathDSP_train_improve import (
     predicting,
-    preprocess,
     cal_time,
-    metrics_list,
 )
 from improvelib.applications.drug_response_prediction.config import DRPInferConfig #NCK
 import improvelib.utils as frm #NCK
@@ -23,25 +21,17 @@ import improvelib.utils as frm #NCK
 file_path = os.path.dirname(os.path.realpath(__file__))
 
 
-def run(params):
-    if "input_data_dir" in params:
-        data_dir = params["input_data_dir"]
-    else:
-        data_dir = params["input_dir"]
-    if "input_model_dir" in params:
-        model_dir = params["input_model_dir"]
-    else:
-        model_dir = params["input_dir"]    
+def run(params):   
     frm.create_outdir(outdir=params["output_dir"])
     #params =  preprocess(params)
-    test_data_fname = frm.build_ml_data_name(params, stage="test")
-    test_df = pl.read_csv(data_dir + "/" + test_data_fname, separator = "\t").to_pandas()
+    test_data_fname = frm.build_ml_data_file_name(data_format=params["data_format"], stage="test")
+    test_df = pl.read_csv(params["input_data_dir"] + "/" + test_data_fname, separator = "\t").to_pandas()
     Xtest_arr = test_df.iloc[:, 0:-1].values
     ytest_arr = test_df.iloc[:, -1].values
     Xtest_arr = np.array(Xtest_arr).astype('float32')
     ytest_arr = np.array(ytest_arr).astype('float32')
     trained_net = mynet.FNN(Xtest_arr.shape[1])
-    modelpath = frm.build_model_path(params, model_dir=model_dir)
+    modelpath = frm.build_model_path(model_file_name=params["model_file_name"], model_file_format=params["model_file_format"], model_dir=params["input_model_dir"])
     trained_net.load_state_dict(tch.load(modelpath))
     trained_net.eval()
     myutil.set_seed(params["seed_int"])
@@ -54,20 +44,32 @@ def run(params):
     test_dl = tchud.DataLoader(test_dataset, batch_size=params['test_batch'], shuffle=False)
     start = datetime.now()
     test_true, test_pred = predicting(trained_net, device, data_loader=test_dl)
+
     frm.store_predictions_df(
-        params, y_true=test_true, y_pred=test_pred, stage="test",
+        y_true=test_true,
+        y_pred=test_pred, 
+        stage="test",
+        y_col_name=params["y_col_name"],
         outdir=params["output_dir"]
     )
-    test_scores = frm.compute_performance_scores(
-        params, y_true=test_true, y_pred=test_pred, stage="test",
-        outdir=params["output_dir"], metrics=metrics_list
-    )
+    if params["calc_infer_scores"]:
+        test_scores = frm.compute_performance_scores(
+            y_true=test_true, 
+            y_pred=test_pred, 
+            stage="test",
+            metric_type=params["metric_type"],
+            outdir=params["output_dir"]
+        )
+
     print('Inference time :[Finished in {:}]'.format(cal_time(datetime.now(), start)))
     return test_scores
 
 def main(args):
-    cfg = DRPInferConfig() #NCK
-    params = cfg.initialize_parameters(file_path, default_config="PathDSP_default_model.txt", additional_definitions=None, required=None) #NCK
+    cfg = DRPInferConfig()
+    params = cfg.initialize_parameters(
+        file_path, 
+        default_config="PathDSP_params.txt", 
+        additional_definitions=None)
     test_scores = run(params)
     print("\nFinished inference of PathDSP model.")
 

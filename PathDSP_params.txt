@@ -1,10 +1,12 @@
 [Preprocess]
+data_format = .txt
+input_supp_data_dir = ../author_data
 train_split_file = gCSI_split_0_train.txt
 val_split_file = gCSI_split_0_val.txt
 test_split_file = gCSI_split_0_test.txt
+y_data_files = [["response.tsv"]]
 x_data_canc_files = [["cancer_gene_expression.tsv", ["Gene_Symbol"]], ["cancer_mutation_count.tsv",["Gene_Symbol"]], ["cancer_discretized_copy_number.tsv", ["Gene_Symbol"]]]
 x_data_drug_files = [["drug_SMILES.tsv"]]
-y_data_files = [["response.tsv"]]
 y_col_name = auc
 bit_int = 128
 permutation_int = 3
@@ -17,16 +19,25 @@ cnvnet_file = CNVnet.txt
 exp_file = EXP.txt
 
 [Train]
-epochs = 800
-learning_rate = 0.001
+data_format = .txt
+model_file_name = model
+model_file_format = .pt
+epochs = 3
+learning_rate = 0.0004
 batch_size = 12
+val_batch = 12
 loss = mse
+patience = 30
 y_col_name = auc
+cuda_name = cuda:0
+dropout = 0.1
 
 [Infer]
 y_col_name = auc
-
-
+infer_batch = 256
+model_file_name = model
+model_file_format = .pt
+data_format = .txt
 
 #gpu_int=0
 #gene_set = 'MSigdb.zip'

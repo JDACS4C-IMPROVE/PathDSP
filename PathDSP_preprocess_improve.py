@@ -329,7 +329,7 @@ def prep_input(params):
         comb_data_mtx["response"] = np.log10(response_df[params["y_col_name"]].values + 0.01)
         comb_data_mtx = comb_data_mtx.dropna()
         pl.from_pandas(comb_data_mtx).write_csv(
-            params["output_dir"] + "/" + frm.build_ml_data_name(params, i)
+            params["output_dir"] + "/" + frm.build_ml_data_file_name(data_format=params["data_format"], stage=i)
 , separator="\t", has_header=True
         )
 
@@ -392,7 +392,6 @@ def run_ssgsea(params):
     df.T.to_csv(params["exp_file"], header=True, index=True, sep="\t")
 
 def run(params):
-    params = frm.build_paths(params)
     frm.create_outdir(outdir=params["output_dir"])
     params = preprocess(params)
     print("convert drug to bits.")
@@ -410,8 +409,11 @@ def run(params):
 
 
 def main(args):
-    cfg = DRPPreprocessConfig() #NCK
-    params = cfg.initialize_parameters(file_path, default_config="PathDSP_default_model.txt", additional_definitions=pathdsp_preprocess_params, required=req_preprocess_args)
+    cfg = DRPPreprocessConfig()
+    params = cfg.initialize_parameters(
+        file_path, 
+        default_config="PathDSP_params.txt", 
+        additional_definitions=pathdsp_preprocess_params)
     run(params)
 
 

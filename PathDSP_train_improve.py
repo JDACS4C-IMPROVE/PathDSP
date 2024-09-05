@@ -19,9 +19,6 @@ from PathDSP_parameter_definitions import pathdsp_train_params
 
 file_path = os.path.dirname(os.path.realpath(__file__))
 
-# [Req] List of metrics names to be compute performance scores
-metrics_list = ["mse", "rmse", "pcc", "scc", "r2"]  
-
 
 class RMSELoss(tch.nn.Module):
     def __init__(self):
@@ -202,9 +199,9 @@ def fit(net, train_dl, valid_dl, epochs, learning_rate, device, opt_fn, params):
 
 def run(params):
     frm.create_outdir(outdir=params["output_dir"])
-    modelpath = frm.build_model_path(params, model_dir=params["output_dir"])
-    train_data_fname = frm.build_ml_data_name(params, stage="train")
-    val_data_fname = frm.build_ml_data_name(params, stage="val")
+    modelpath = frm.build_model_path(model_file_name=params["model_file_name"], model_file_format=params["model_file_format"], model_dir=params["output_dir"])
+    train_data_fname = frm.build_ml_data_file_name(data_format=params["data_format"], stage="train")
+    val_data_fname = frm.build_ml_data_file_name(data_format=params["data_format"], stage="val")
     #params =  preprocess(params)
     
     # set parameters
@@ -285,7 +282,10 @@ def run(params):
     # -----------------------------
     # import ipdb; ipdb.set_trace()
     frm.store_predictions_df(
-        params, y_true=val_true, y_pred=val_pred, stage="val",
+        y_true=val_true, 
+        y_pred=val_pred, 
+        stage="val",
+        y_col_name=params["y_col_name"],
         outdir=params["output_dir"]
     )
 
@@ -294,20 +294,24 @@ def run(params):
     # -----------------------------
     # import ipdb; ipdb.set_trace()
     val_scores = frm.compute_performance_scores(
-        params, y_true=val_true, y_pred=val_pred, stage="val",
-        outdir=params["output_dir"], metrics=metrics_list
+        y_true=val_true, 
+        y_pred=val_pred, 
+        stage="val",
+        metric_type=params["metric_type"],
+        outdir=params["output_dir"]
     )
     return val_scores
 
 
 def main(args):
-    cfg = DRPTrainConfig() #NCK
-    params = cfg.initialize_parameters(file_path, default_config="PathDSP_default_model.txt", additional_definitions=pathdsp_train_params, required=None) #NCK
+    cfg = DRPTrainConfig()
+    params = cfg.initialize_parameters(
+        file_path, 
+        default_config="PathDSP_params.txt", 
+        additional_definitions=pathdsp_train_params)
     # get node name
     params["node_name"] = socket.gethostname()
     val_scores = run(params)
-    # with open(params["model_outdir"] + '/params.json', 'w') as json_file:
-    #     json.dump(params, json_file, indent=4)
     df = pd.DataFrame.from_dict(params, orient='index', columns=['value'])
     df.to_csv(params["output_dir"] + '/params.txt',sep="\t")
 
