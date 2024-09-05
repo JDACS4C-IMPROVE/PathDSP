@@ -1,65 +1,27 @@
-import candle
 import os
 import sys
-import datetime
-# IMPROVE/CANDLE imports
-from improve import framework as frm
-from improve.metrics import compute_metrics
-#from model_utils.torch_utils import predicting
-#import json
-#from json import JSONEncoder
-from PathDSP_preprocess_improve import cal_time, preprocess, model_preproc_params, app_preproc_params, preprocess_params
-
-#sys.path.append("/usr/local/PathDSP/PathDSP")
-#sys.path.append("/usr/local/PathDSP/PathDSP")
-#sys.path.append(os.getcwd() + "/PathDSP")
-#import FNN_new
-import argparse
 import numpy as np
 import pandas as pd
-import scipy.stats as scistat
 from datetime import datetime
-
-import sklearn.preprocessing as skpre
-import sklearn.model_selection as skms
-import sklearn.metrics as skmts
-import sklearn.utils as skut
-
+import socket
 import torch as tch
 import torch.utils.data as tchud
-
-import myModel as mynet
-import myDataloader as mydl
-import myUtility as myutil
+import model_utils.myModel as mynet
+import model_utils.myDataloader as mydl
+import model_utils.myUtility as myutil
 import polars as pl
-import json
-import socket
+
+from improvelib.applications.drug_response_prediction.config import DRPTrainConfig #NCK
+import improvelib.utils as frm #NCK
+
+from PathDSP_preprocess_improve import cal_time, preprocess
+from PathDSP_parameter_definitions import pathdsp_train_params
 
 file_path = os.path.dirname(os.path.realpath(__file__))
 
 # [Req] List of metrics names to be compute performance scores
 metrics_list = ["mse", "rmse", "pcc", "scc", "r2"]  
 
-# Currently, there are no app-specific args for the train script.
-app_train_params = []
-
-# [PathDSP] Model-specific params (Model: PathDSP)
-model_train_params = [
-    {"name": "cuda_name",  # TODO. frm. How should we control this?
-     "action": "store",
-     "type": str,
-     "help": "Cuda device (e.g.: cuda:0, cuda:1."},
-    {"name": "learning_rate",
-     "type": float,
-     "default": 0.0001,
-     "help": "Learning rate for the optimizer."
-    },
-    {"name": "dropout",
-     "type": float,
-     "default": 0.1,
-     "help": "Dropout rate for the optimizer."
-    },
-]
 
 class RMSELoss(tch.nn.Module):
     def __init__(self):
@@ -70,8 +32,6 @@ class RMSELoss(tch.nn.Module):
         criterion = tch.nn.MSELoss()
         loss = tch.sqrt(criterion(x, y) + eps)
         return loss
-
-
 
 def predicting(model, device, data_loader):
     """ Method to make predictions/inference.
@@ -175,7 +135,7 @@ def fit(net, train_dl, valid_dl, epochs, learning_rate, device, opt_fn, params):
     trainloss_list = [] # metrics: MSE, size equals to EPOCH
     validloss_list = [] # metrics: MSE, size equals to EPOCH
     validr2_list = [] # metrics: r2, size equals to EPOCH
-    early_stopping = myutil.EarlyStopping(patience=params['patience'], verbose=True, path= params["model_outdir"] + "/checkpoint.pt") # initialize the early_stopping
+    early_stopping = myutil.EarlyStopping(patience=params['patience'], verbose=True, path= params["output_dir"] + "/checkpoint.pt") # initialize the early_stopping
     # repeat the training for EPOCH times
     start_total = datetime.now()
     for epoch in range(epochs):
@@ -235,17 +195,17 @@ def fit(net, train_dl, valid_dl, epochs, learning_rate, device, opt_fn, params):
     
     print('Total time (all epochs) :[Finished in {:}]'.format(cal_time(datetime.now(), start_total)))
     # load the last checkpoint with the best model
-    net.load_state_dict(tch.load(params["model_outdir"] + '/checkpoint.pt'))
+    net.load_state_dict(tch.load(params["output_dir"] + '/checkpoint.pt'))
 
     return net, trainloss_list, validloss_list, validr2_list
 
 
 def run(params):
-    frm.create_outdir(outdir=params["model_outdir"])
-    modelpath = frm.build_model_path(params, model_dir=params["model_outdir"])
+    frm.create_outdir(outdir=params["output_dir"])
+    modelpath = frm.build_model_path(params, model_dir=params["output_dir"])
     train_data_fname = frm.build_ml_data_name(params, stage="train")
     val_data_fname = frm.build_ml_data_name(params, stage="val")
-    params =  preprocess(params)
+    #params =  preprocess(params)
     
     # set parameters
     #myutil.set_seed(params["seed_int"])
@@ -267,8 +227,8 @@ def run(params):
     # [PathDSP] Prepare dataloaders
     # ------------------------------------------------------
     print('loadinig data')
-    train_df = pl.read_csv(params["train_ml_data_dir"] + "/" + train_data_fname, separator = "\t").to_pandas()
-    val_df = pl.read_csv(params["val_ml_data_dir"] + "/" + val_data_fname, separator = "\t").to_pandas()
+    train_df = pl.read_csv(params["input_dir"] + "/" + train_data_fname, separator = "\t").to_pandas()
+    val_df = pl.read_csv(params["input_dir"] + "/" + val_data_fname, separator = "\t").to_pandas()
     Xtrain_arr = train_df.iloc[:, 0:-1].values
     Xvalid_arr = val_df.iloc[:, 0:-1].values
     ytrain_arr = train_df.iloc[:, -1].values
@@ -310,7 +270,7 @@ def run(params):
                             'train loss':train_loss_list, 
                             'valid loss': valid_loss_list,
                             'valid r2': valid_r2_list})
-    loss_df.to_csv(params['model_outdir'] + '/Val_Loss_orig.txt', header=True, index=False, sep="\t")
+    loss_df.to_csv(params['output_dir'] + '/Val_Loss_orig.txt', header=True, index=False, sep="\t")
 
     # make train/valid loss plots
     best_model = trained_net
@@ -326,38 +286,30 @@ def run(params):
     # import ipdb; ipdb.set_trace()
     frm.store_predictions_df(
         params, y_true=val_true, y_pred=val_pred, stage="val",
-        outdir=params["model_outdir"]
+        outdir=params["output_dir"]
     )
 
     # -----------------------------
     # [Req] Compute performance scores
     # -----------------------------
     # import ipdb; ipdb.set_trace()
-    val_scores = frm.compute_performace_scores(
+    val_scores = frm.compute_performance_scores(
         params, y_true=val_true, y_pred=val_pred, stage="val",
-        outdir=params["model_outdir"], metrics=metrics_list
+        outdir=params["output_dir"], metrics=metrics_list
     )
     return val_scores
 
 
 def main(args):
-    additional_definitions = model_preproc_params + \
-                            model_train_params + \
-                            app_train_params
-    params = frm.initialize_parameters(
-        file_path,
-        default_model="PathDSP_default_model.txt",
-        #default_model="PathDSP_cs_model.txt",
-        additional_definitions=additional_definitions,
-        required=None,
-    )
+    cfg = DRPTrainConfig() #NCK
+    params = cfg.initialize_parameters(file_path, default_config="PathDSP_default_model.txt", additional_definitions=pathdsp_train_params, required=None) #NCK
     # get node name
     params["node_name"] = socket.gethostname()
     val_scores = run(params)
     # with open(params["model_outdir"] + '/params.json', 'w') as json_file:
     #     json.dump(params, json_file, indent=4)
     df = pd.DataFrame.from_dict(params, orient='index', columns=['value'])
-    df.to_csv(params["model_outdir"] + '/params.txt',sep="\t")
+    df.to_csv(params["output_dir"] + '/params.txt',sep="\t")
 
 
 

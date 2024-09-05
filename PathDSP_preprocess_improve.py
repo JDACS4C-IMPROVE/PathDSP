@@ -1,14 +1,9 @@
 import sys
 import os
-import numpy as np
 import polars as pl
-import argparse
 import numpy as np
 import pandas as pd
-import candle
 from functools import reduce
-from improve import drug_resp_pred as drp
-from improve import framework as frm
 from pathlib import Path
 from rdkit import Chem
 from rdkit.Chem import AllChem
@@ -18,99 +13,21 @@ import NetPEA as pea
 import gseapy as gp
 import sklearn.model_selection as skms
 from sklearn.preprocessing import StandardScaler
+from improvelib.applications.drug_response_prediction.config import DRPPreprocessConfig #NCK
+from improvelib.utils import str2bool #NCK
+import improvelib.utils as frm #NCK
+import improvelib.applications.drug_response_prediction.drug_utils as drugs #NCK
+import improvelib.applications.drug_response_prediction.omics_utils as omics #NCK
+import improvelib.applications.drug_response_prediction.drp_utils as drp #NCK
 
+from PathDSP_parameter_definitions import pathdsp_preprocess_params
 
 file_path = Path(__file__).resolve().parent
 
-app_preproc_params = [
-    # These arg should be specified in the [modelname]_default_model.txt:
-    # y_data_files, x_data_canc_files, x_data_drug_files
-    {"name": "y_data_files", # default
-     "type": str,
-     "help": "List of files that contain the y (prediction variable) data. \
-             Example: [['response.tsv']]",
-    },
-    {"name": "x_data_canc_files", # [Req]
-     "type": str,
-     "help": "List of feature files including gene_system_identifer. Examples: \n\
-             1) [['cancer_gene_expression.tsv', ['Gene_Symbol']]] \n\
-             2) [['cancer_copy_number.tsv', ['Ensembl', 'Entrez']]].",
-    },
-    {"name": "x_data_drug_files", # [Req]
-     "type": str,
-     "help": "List of feature files. Examples: \n\
-             1) [['drug_SMILES.tsv']] \n\
-             2) [['drug_SMILES.tsv'], ['drug_ecfp4_nbits512.tsv']]",
-    },
-    {"name": "canc_col_name",
-     "default": "improve_sample_id", # default
-     "type": str,
-     "help": "Column name in the y (response) data file that contains the cancer sample ids.",
-    },
-    {"name": "drug_col_name", # default
-     "default": "improve_chem_id",
-     "type": str,
-     "help": "Column name in the y (response) data file that contains the drug ids.",
-    },
-
-]
-
-# [PathDSP] Model-specific params
-model_preproc_params = [
-    {"name": "bit_int",
-     "type": int,
-     "default": 128,
-     "help": "Number of bits for morgan fingerprints.",
-    },
-    {"name": "permutation_int",
-     "type": int,
-     "default": 3,
-     "help": "Number of permutation for calculating enrichment scores.",
-    },
-    {"name": "seed_int",
-     "type": int,
-     "default": 42,
-     "help": "Random seed for random walk algorithm.",
-    },
-    {"name": "cpu_int",
-     "type": int,
-     "default": 20,
-     "help": "Number of cpus to use when calculating pathway enrichment scores.",
-    },    
-    {"name": "drug_bits_file",
-     "type": str,
-     "default": "drug_mbit_df.txt",
-     "help": "File name to save the drug bits file.",
-    },
-    {"name": "dgnet_file",
-     "type": str,
-     "default": "DGnet.txt",
-     "help": "File name to save the drug target net file.",
-    },
-    {"name": "mutnet_file",
-     "type": str,
-     "default": "MUTnet.txt",
-     "help": "File name to save the mutation net file.",
-    },    
-    {"name": "cnvnet_file",
-     "type": str,
-     "default": "CNVnet.txt",
-     "help": "File name to save the CNV net file.",
-    },
-    {"name": "exp_file",
-     "type": str,
-     "default": "EXPnet.txt",
-     "help": "File name to save the EXP net file.",
-    },    
-]
-
-preprocess_params = app_preproc_params + model_preproc_params
-req_preprocess_args = [ll["name"] for ll in preprocess_params]
-
+req_preprocess_args = [ll["name"] for ll in pathdsp_preprocess_params]
 
 def mkdir(directory):
     directories = directory.split("/")
-
     folder = ""
     for d in directories:
         folder += d + "/"
@@ -120,7 +37,6 @@ def mkdir(directory):
 
 
 def preprocess(params):
-    params["author_data_dir"] = os.getenv("AUTHOR_DATA_DIR")
     for i in [
         "drug_bits_file",
         "dgnet_file",
@@ -128,8 +44,7 @@ def preprocess(params):
         "cnvnet_file",
         "exp_file",
     ]:
-        params[i] = params["ml_data_outdir"] + "/" + params[i]
-
+        params[i] = params["output_dir"] + "/" + params[i]
     return params
 
 
@@ -152,9 +67,7 @@ def smile2bits(params):
     start = datetime.now()
     response_df = [response_out(params, params[split_file]) for split_file in ["train_split_file", "test_split_file", "val_split_file"]]
     response_df = pd.concat(response_df, ignore_index=True)
-
-    smile_df = drp.DrugsLoader(params)
-    
+    smile_df = drugs.DrugsLoader(params)
     smile_df = smile_df.dfs['drug_SMILES.tsv']
     smile_df = smile_df.reset_index()
     smile_df.columns = ["drug", "smile"]
@@ -206,10 +119,8 @@ def times_expression(rwr, exp):
     if len(gene_list) == 0:
         print("ERROR! no overlapping genes")
         sys.exit(1)
-
     # multiply with gene expression for overlapping cell, gene
     rwr_timesexp = rwr.loc[cell_list, gene_list] * exp.loc[cell_list, gene_list]
-
     # concat with other gene
     out_gene_list = list(set(rwr.columns) - set(gene_list))
     out_df = pd.concat([rwr_timesexp, rwr[out_gene_list]], axis=1)
@@ -219,9 +130,9 @@ def times_expression(rwr, exp):
 def run_netpea(params, dtype, multiply_expression):
     # timer
     start_time = datetime.now()
-    ppi_path = params["author_data_dir"] + "/STRING/9606.protein_name.links.v11.0.pkl"
+    ppi_path = params["input_supp_data_dir"] + "/STRING/9606.protein_name.links.v11.0.pkl"
     pathway_path = (
-        params["author_data_dir"] + "/MSigdb/union.c2.cp.pid.reactome.v7.2.symbols.gmt"
+        params["input_supp_data_dir"] + "/MSigdb/union.c2.cp.pid.reactome.v7.2.symbols.gmt"
     )
     log_transform = False
     permutation_int = params["permutation_int"]
@@ -229,13 +140,12 @@ def run_netpea(params, dtype, multiply_expression):
     cpu_int = params["cpu_int"]
     response_df = [response_out(params, params[split_file]) for split_file in ["train_split_file", "test_split_file", "val_split_file"]]
     response_df = pd.concat(response_df, ignore_index=True)
-    omics_data = drp.OmicsLoader(params)
-
+    omics_data = omics.OmicsLoader(params)
     if dtype == "DGnet":
-        drug_info = pd.read_csv(os.environ["IMPROVE_DATA_DIR"] + "/raw_data/x_data/drug_info.tsv", sep="\t")
+        drug_info = pd.read_csv(params["input_dir"] + "/x_data/drug_info.tsv", sep="\t")
         drug_info["NAME"] = drug_info["NAME"].str.upper()
         target_info = pd.read_csv(
-            params["author_data_dir"] + "/data/DB.Drug.Target.txt", sep="\t"
+            params["input_supp_data_dir"] + "/data/DB.Drug.Target.txt", sep="\t"
         )
         target_info = target_info.rename(columns={"drug": "NAME"})
         combined_df = pd.merge(drug_info, target_info, how="left", on="NAME").dropna(
@@ -244,7 +154,7 @@ def run_netpea(params, dtype, multiply_expression):
         combined_df = combined_df.loc[
             combined_df["improve_chem_id"].isin(response_df["improve_chem_id"]),
         ]
-        restart_path = params["ml_data_outdir"] + "/drug_target.txt"
+        restart_path = params["output_dir"] + "/drug_target.txt"
         combined_df.iloc[:, -2:].to_csv(
             restart_path, sep="\t", header=True, index=False
         )
@@ -258,7 +168,7 @@ def run_netpea(params, dtype, multiply_expression):
         mutation_data = mutation_data.loc[
             mutation_data["improve_sample_id"].isin(response_df["improve_sample_id"]),
         ]
-        restart_path = params["ml_data_outdir"] + "/mutation_data.txt"
+        restart_path = params["output_dir"] + "/mutation_data.txt"
         mutation_data.iloc[:, 0:2].to_csv(
             restart_path, sep="\t", header=True, index=False
         )
@@ -272,7 +182,7 @@ def run_netpea(params, dtype, multiply_expression):
         cnv_data = cnv_data.loc[
             cnv_data["improve_sample_id"].isin(response_df["improve_sample_id"]),
         ]
-        restart_path = params["ml_data_outdir"] + "/cnv_data.txt"
+        restart_path = params["output_dir"] + "/cnv_data.txt"
         cnv_data.iloc[:, 0:2].to_csv(restart_path, sep="\t", header=True, index=False)
         outpath = params["cnvnet_file"]
     # perform Random Walk
@@ -344,7 +254,6 @@ def prep_input(params):
         columns={"improve_chem_id": "drug_id", "improve_sample_id": "sample_id"}
     )
     # Extract relevant IDs
-
     common_drug_ids = reduce(
         np.intersect1d,
         (drug_mbit_df["drug_id"], DGnet["drug_id"], response_df["drug_id"]),
@@ -392,7 +301,6 @@ def prep_input(params):
     drug_data = drug_mbit_df.join(DGnet)
     sample_data = CNVnet.join([MUTnet, EXP])
     ## export train,val,test set
-    # for i in ['train', 'test', 'val']:
     for i in ["train", "test", "val"]:
         response_df = drp.DrugResponseLoader(params, split_file=params[i+"_split_file"], verbose=True)
         response_df = response_df.dfs['response.tsv']
@@ -421,7 +329,7 @@ def prep_input(params):
         comb_data_mtx["response"] = np.log10(response_df[params["y_col_name"]].values + 0.01)
         comb_data_mtx = comb_data_mtx.dropna()
         pl.from_pandas(comb_data_mtx).write_csv(
-            params["ml_data_outdir"] + "/" + frm.build_ml_data_name(params, i)
+            params["output_dir"] + "/" + frm.build_ml_data_name(params, i)
 , separator="\t", has_header=True
         )
 
@@ -434,7 +342,7 @@ def run_ssgsea(params):
     #     canc_col_name="improve_sample_id",
     #     gene_system_identifier="Gene_Symbol",
     # )
-    omics_data = drp.OmicsLoader(params)
+    omics_data = omics.OmicsLoader(params)
     expMat = omics_data.dfs['cancer_gene_expression.tsv']
     expMat = expMat.set_index(params['canc_col_name'])
 
@@ -446,10 +354,10 @@ def run_ssgsea(params):
     expMat = expMat.loc[expMat.index.isin(response_df["improve_sample_id"]),]
     gct = expMat.T  # gene (rows) cell lines (columns)
     pathway_path = (
-        params["author_data_dir"] + "/MSigdb/union.c2.cp.pid.reactome.v7.2.symbols.gmt"
+        params["input_supp_data_dir"] + "/MSigdb/union.c2.cp.pid.reactome.v7.2.symbols.gmt"
     )
     gmt = pathway_path
-    tmp_str = params["ml_data_outdir"] + "/tmpdir_ssgsea/"
+    tmp_str = params["output_dir"] + "/tmpdir_ssgsea/"
 
     if not os.path.isdir(tmp_str):
         os.mkdir(tmp_str)
@@ -485,7 +393,7 @@ def run_ssgsea(params):
 
 def run(params):
     params = frm.build_paths(params)
-    frm.create_outdir(outdir=params["ml_data_outdir"])
+    frm.create_outdir(outdir=params["output_dir"])
     params = preprocess(params)
     print("convert drug to bits.")
     smile2bits(params)
@@ -502,13 +410,8 @@ def run(params):
 
 
 def main(args):
-    params = frm.initialize_parameters(
-        file_path,
-        default_model="PathDSP_default_model.txt",
-        #default_model="PathDSP_cs_model.txt",
-        additional_definitions=preprocess_params,
-        required=req_preprocess_args,
-    )
+    cfg = DRPPreprocessConfig() #NCK
+    params = cfg.initialize_parameters(file_path, default_config="PathDSP_default_model.txt", additional_definitions=pathdsp_preprocess_params, required=req_preprocess_args)
     run(params)
 
 
