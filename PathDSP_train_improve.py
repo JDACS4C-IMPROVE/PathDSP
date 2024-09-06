@@ -286,7 +286,7 @@ def run(params):
         y_pred=val_pred, 
         stage="val",
         y_col_name=params["y_col_name"],
-        outdir=params["output_dir"]
+        output_dir=params["output_dir"]
     )
 
     # -----------------------------
@@ -298,7 +298,7 @@ def run(params):
         y_pred=val_pred, 
         stage="val",
         metric_type=params["metric_type"],
-        outdir=params["output_dir"]
+        output_dir=params["output_dir"]
     )
     return val_scores
 

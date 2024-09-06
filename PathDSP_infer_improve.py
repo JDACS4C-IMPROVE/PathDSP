@@ -50,7 +50,7 @@ def run(params):
         y_pred=test_pred, 
         stage="test",
         y_col_name=params["y_col_name"],
-        outdir=params["output_dir"]
+        output_dir=params["output_dir"]
     )
     if params["calc_infer_scores"]:
         test_scores = frm.compute_performance_scores(
@@ -58,7 +58,7 @@ def run(params):
             y_pred=test_pred, 
             stage="test",
             metric_type=params["metric_type"],
-            outdir=params["output_dir"]
+            output_dir=params["output_dir"]
         )
 
     print('Inference time :[Finished in {:}]'.format(cal_time(datetime.now(), start)))
