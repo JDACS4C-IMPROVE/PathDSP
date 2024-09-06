@@ -20,7 +20,7 @@ import improvelib.applications.drug_response_prediction.drug_utils as drugs #NCK
 import improvelib.applications.drug_response_prediction.omics_utils as omics #NCK
 import improvelib.applications.drug_response_prediction.drp_utils as drp #NCK
 
-from PathDSP_parameter_definitions import pathdsp_preprocess_params
+from model_params_def import pathdsp_preprocess_params
 
 file_path = Path(__file__).resolve().parent
 

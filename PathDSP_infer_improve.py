@@ -17,6 +17,7 @@ from PathDSP_train_improve import (
 )
 from improvelib.applications.drug_response_prediction.config import DRPInferConfig #NCK
 import improvelib.utils as frm #NCK
+from model_params_def import pathdsp_infer_params
 
 file_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -69,7 +70,7 @@ def main(args):
     params = cfg.initialize_parameters(
         file_path, 
         default_config="PathDSP_params.txt", 
-        additional_definitions=None)
+        additional_definitions=pathdsp_infer_params)
     test_scores = run(params)
     print("\nFinished inference of PathDSP model.")
 

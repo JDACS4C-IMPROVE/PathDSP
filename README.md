@@ -1,59 +1,21 @@
 # PathDSP
+# GraphDRP
 
-This is development for v0.1.0-alpha.
+This repository demonstrates how to use the [IMPROVE library v0.1.0-alpha](https://jdacs4c-improve.github.io/docs/v0.1.0-alpha/) for building a drug response prediction (DRP) model using PathDSP, and provides examples with the benchmark [cross-study analysis (CSA) dataset](https://web.cels.anl.gov/projects/IMPROVE_FTP/candle/public/improve/benchmarks/single_drug_drp/benchmark-data-pilot1/csa_data/).
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-This repository demonstrates how to use the [IMPROVE library v0.0.3-beta](https://github.com/JDACS4C-IMPROVE/IMPROVE/tree/v0.0.3-beta) for building a drug response prediction (DRP) model using PathDSP, and provides examples with the benchmark [cross-study analysis (CSA) dataset](https://web.cels.anl.gov/projects/IMPROVE_FTP/candle/public/improve/benchmarks/single_drug_drp/benchmark-data-pilot1/csa_data/).
-
-This version, tagged as `v0.0.3-beta`, is the final release before transitioning to `v0.1.0-alpha`, which introduces a new API. Version `v0.0.3-beta` and all previous releases have served as the foundation for developing essential components of the IMPROVE software stack. Subsequent releases build on this legacy with an updated API, designed to encourage broader adoption of IMPROVE and its curated models by the research community.
-
-A more detailed tutorial can be found [here](https://jdacs4c-improve.github.io/docs/v0.0.3-beta/content/ModelContributorGuide.html).
+This version, tagged as `v0.1.0-alpha`, introduces a new API which is designed to encourage broader adoption of IMPROVE and its curated models by the research community.
 
 
 ## Dependencies
 Installation instuctions are detailed below in [Step-by-step instructions](#step-by-step-instructions).
 
-Conda `yml` file [environment_082223.yml](./environment_082223.yml)
+Conda `yml` file [PathDSP_env_conda](./PathDSP_env_conda.yml)
 
 ML framework:
 + [Torch](https://pytorch.org/) -- deep learning framework for building the prediction model
 
 IMPROVE dependencies:
-+ [IMPROVE v0.0.3-beta](https://github.com/JDACS4C-IMPROVE/IMPROVE/tree/v0.0.3-beta)
-+ [candle_lib](https://github.com/ECP-CANDLE/candle_lib) - IMPROVE dependency (enables various hyperparameter optimization on HPC machines) 
++ [IMPROVE v0.1.0-alpha](https://jdacs4c-improve.github.io/docs/v0.1.0-alpha/) 
 
 
 
@@ -98,7 +60,8 @@ csa_data/raw_data/
 + `PathDSP_preprocess_improve.py` - takes benchmark data files and transforms into files for training and inference
 + `PathDSP_train_improve.py` - trains the PathDSP model
 + `PathDSP_infer_improve.py` - runs inference with the trained PathDSP model
-+ `PathDSP_default_model.txt` - default parameter file
++ `model_params_def.py` - definitions of parameters that are specific to the model
++ `PathDSP_params.txt` - default parameter file
 
 
 
@@ -108,14 +71,14 @@ csa_data/raw_data/
 ```
 git clone https://github.com/JDACS4C-IMPROVE/PathDSP
 cd PathDSP
-git checkout v0.0.3-beta
+git checkout develop
 ```
 
 
 ### 2. Set computational environment
 Create conda env using `yml`
 ```
-conda env create -f environment_082223.yml -n PathDSP_env
+conda env create -f PathDSP_env_conda.yml -n PathDSP_env
 conda activate PathDSP_env
 ```
 
@@ -134,7 +97,7 @@ This will:
 
 ### 4. Preprocess CSA benchmark data (_raw data_) to construct model input data (_ML data_)
 ```bash
-python PathDSP_preprocess_improve.py
+python PathDSP_preprocess_improve.py --input_dir ./csa_data/raw_data --output_dir exp_result
 ```
 
 Preprocesses the CSA data and creates train, validation (val), and test datasets.
@@ -143,28 +106,26 @@ Generates:
 * three model input data files: `train_data.txt`, `val_data.txt`, `test_data.txt`
 
 ```
-ml_data
-└── gCSI
-    └── split_0
-        ├── tmpdir_ssgsea
-        ├── EXP.txt
-        ├── cnv_data.txt
-        ├── CNVnet.txt
-        ├── DGnet.txt
-        ├── MUTnet.txt
-        ├── drug_mbit_df.txt
-        ├── drug_target.txt
-        ├── mutation_data.txt 
-        ├── test_data.txt
-        ├── train_data.txt
-        ├── val_data.txt
-        └── x_data_gene_expression_scaler.gz
+exp_result
+├── tmpdir_ssgsea
+├── EXP.txt
+├── cnv_data.txt
+├── CNVnet.txt
+├── DGnet.txt
+├── MUTnet.txt
+├── drug_mbit_df.txt
+├── drug_target.txt
+├── mutation_data.txt 
+├── test_data.txt
+├── train_data.txt
+├── val_data.txt
+└── x_data_gene_expression_scaler.gz
 ```
 
 
 ### 5. Train PathDSP model
 ```bash
-python PathDSP_train_improve.py
+python PathDSP_train_improve.py --input_dir exp_result --output_dir exp_result
 ```
 
 Trains PathDSP using the model input data: `train_data.txt` (training), `val_data.txt` (for early stopping).
@@ -174,19 +135,19 @@ Generates:
 * predictions on val data (tabular data): `val_y_data_predicted.csv`
 * prediction performance scores on val data: `val_scores.json`
 ```
-out_models
-└── gCSI
-    └── split_0
-        ├── model.pt
-        ├── checkpoint.pt
-        ├── Val_Loss_orig.txt
-        ├── val_scores.json
-        └── val_y_data_predicted.csv
+exp_result
+├── model.pt
+├── checkpoint.pt
+├── Val_Loss_orig.txt
+├── val_scores.json
+└── val_y_data_predicted.csv
 ```
 
 
 ### 6. Run inference on test data with the trained model
-```python PathDSP_infer_improve.py```
+```bash
+python PathDSP_infer_improve.py --input_data_dir exp_result --input_model_dir exp_result --output_dir exp_result --calc_infer_score True
+```
 
 Evaluates the performance on a test dataset with the trained model.
 
@@ -194,9 +155,7 @@ Generates:
 * predictions on test data (tabular data): `test_y_data_predicted.csv`
 * prediction performance scores on test data: `test_scores.json`
 ```
-out_infer
-└── gCSI-gCSI
-    └── split_0
-        ├── test_scores.json
-        └── test_y_data_predicted.csv
+exp_result
+├── test_scores.json
+└── test_y_data_predicted.csv
 ```
