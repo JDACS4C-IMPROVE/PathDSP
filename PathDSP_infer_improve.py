@@ -34,14 +34,14 @@ def run(params):
     modelpath = frm.build_model_path(model_file_name=params["model_file_name"], model_file_format=params["model_file_format"], model_dir=params["input_model_dir"])
     trained_net.load_state_dict(tch.load(modelpath))
     trained_net.eval()
-    myutil.set_seed(params["seed_int"])
+    #myutil.set_seed(params["seed_int"])
     cuda_env_visible = os.getenv("CUDA_VISIBLE_DEVICES")
     if cuda_env_visible is not None:
         device = 'cuda:0'
     else:
         device = myutil.get_device(uth=int(params['cuda_name'].split(':')[1]))
     test_dataset = mydl.NumpyDataset(tch.from_numpy(Xtest_arr), tch.from_numpy(ytest_arr))
-    test_dl = tchud.DataLoader(test_dataset, batch_size=params['test_batch'], shuffle=False)
+    test_dl = tchud.DataLoader(test_dataset, batch_size=params['infer_batch'], shuffle=False)
     start = datetime.now()
     test_true, test_pred = predicting(trained_net, device, data_loader=test_dl)
 

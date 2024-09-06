@@ -58,3 +58,11 @@ pathdsp_train_params = [
      "help": "Dropout rate for the optimizer."
     },
 ]
+
+pathdsp_infer_params = [
+    {"name": "cuda_name",  # TODO. frm. How should we control this?
+     "action": "store",
+     "type": str,
+     "help": "Cuda device (e.g.: cuda:0, cuda:1."
+     },
+]

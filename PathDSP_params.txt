@@ -38,6 +38,7 @@ infer_batch = 256
 model_file_name = model
 model_file_format = .pt
 data_format = .txt
+cuda_name = cuda:0
 
 #gpu_int=0
 #gene_set = 'MSigdb.zip'
