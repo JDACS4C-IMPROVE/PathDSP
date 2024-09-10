@@ -1,6 +1,6 @@
 [Preprocess]
 data_format = .txt
-input_supp_data_dir = ../author_data
+input_supp_data_dir = ./author_data
 train_split_file = gCSI_split_0_train.txt
 val_split_file = gCSI_split_0_val.txt
 test_split_file = gCSI_split_0_test.txt
