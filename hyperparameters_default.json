@@ -58,10 +58,25 @@
         }
     },
     "PathDSP": {
-        "CCLE": {},
-        "CTRPv2": {},
-        "GDSCv1": {},
-        "GDSCv2": {},
-        "gCSI": {}  
+        "CCLE": {
+            "batch_size": 12,
+            "learning_rate": 0.0004
+        },
+        "CTRPv2": {
+            "batch_size": 12,
+            "learning_rate": 0.0004
+        },
+        "GDSCv1": {
+            "batch_size": 12,
+            "learning_rate": 0.0004
+        },
+        "GDSCv2": {
+            "batch_size": 12,
+            "learning_rate": 0.0004
+        },
+        "gCSI": {
+            "batch_size": 12,
+            "learning_rate": 0.0004
+        }
     }
 }
