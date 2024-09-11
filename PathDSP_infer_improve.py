@@ -63,7 +63,7 @@ def run(params):
         )
 
     print('Inference time :[Finished in {:}]'.format(cal_time(datetime.now(), start)))
-    return test_scores
+    return True
 
 def main(args):
     cfg = DRPInferConfig()
@@ -71,7 +71,7 @@ def main(args):
         file_path, 
         default_config="PathDSP_params.txt", 
         additional_definitions=pathdsp_infer_params)
-    test_scores = run(params)
+    if_ran = run(params)
     print("\nFinished inference of PathDSP model.")
 
     
