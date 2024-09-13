@@ -22,7 +22,7 @@ exp_file = EXP.txt
 data_format = .txt
 model_file_name = model
 model_file_format = .pt
-#epochs = 3
+#epochs = 20
 epochs = 800
 learning_rate = 0.0004
 batch_size = 12
@@ -30,7 +30,7 @@ val_batch = 12
 loss = mse
 patience = 30
 y_col_name = auc
-cuda_name = cuda:0
+cuda_name = cuda:5
 dropout = 0.1
 
 [Infer]
