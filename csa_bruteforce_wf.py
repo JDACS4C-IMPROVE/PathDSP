@@ -1,7 +1,5 @@
 """ Python implementation of cross-study analysis workflow """
-model_name = 'PathDSP'  # Note! Change this for your model.
-cuda_name = "cuda:0"
-# cuda_name = "cuda:7"
+
 
 import os
 import subprocess
@@ -18,6 +16,7 @@ from improvelib.applications.drug_response_prediction.config import DRPPreproces
 # from improvelib.applications.drug_response_prediction.config import DRPTrainConfig
 # from improvelib.applications.drug_response_prediction.config import DRPInferConfig
 import improvelib.utils as frm
+from csa_bruteforce_params_def import csa_bruteforce_params
 
 
 def build_split_fname(source: str, split: int, phase: str):
@@ -50,40 +49,29 @@ print_fn(f"File path: {filepath}")
 # ===============================================================
 ###  CSA settings
 # ===============================================================
-# TODO make it work!
-# cfg = Config()
-# params = cfg.initialize_parameters(
-#     pathToModelDir=filepath,
-#     section='DEFAULT',
-#     default_config="csa_params.txt",
-#     default_model=None,
-#     additional_definitions=None,
-#     required=None
-# )
-# params = frm.build_paths(params)
+
 
 cfg = DRPPreprocessConfig() # TODO submit github issue; too many logs printed; is it necessary?
 params = cfg.initialize_parameters(
     pathToModelDir=filepath,
-    # default_config="csa_params.txt",
-    default_config="csa_params.ini",
-    additional_cli_section=None,
-    additional_definitions=None,
+    default_config="csa_bruteforce_params.ini",
+    additional_definitions=csa_bruteforce_params,
     required=None
 )
 params = frm.build_paths(params) # TODO move this to improvelib
 
 # Model scripts
+model_name = params["model_name"]
 preprocess_python_script = f'{model_name}_preprocess_improve.py'
 train_python_script = f'{model_name}_train_improve.py'
 infer_python_script = f'{model_name}_infer_improve.py'
 
 # Specify dirs
-# y_col_name = "auc"
+
 y_col_name = params['y_col_name']
 # maindir = Path(f"./{y_col_name}")
 # maindir = Path(f"./0_{y_col_name}_improvelib") # main output dir
-MAIN_CSA_OUTDIR = Path(f"./run.csa.full") # main output dir
+MAIN_CSA_OUTDIR = Path(params["csa_outdir"]) # main output dir
 # Note! ML data and trained model should be saved to the same dir for inference script
 MAIN_ML_DATA_DIR = MAIN_CSA_OUTDIR / 'ml_data' # output_dir_pp, input_dir_train, input_dir_infer
 MAIN_MODEL_DIR = MAIN_CSA_OUTDIR / 'models' # output_dir_train, input_dir_infer
@@ -93,48 +81,13 @@ MAIN_INFER_DIR = MAIN_CSA_OUTDIR / 'infer' # output_dir infer
 # TODO Should we set input_dir (and output_dir) for each models scrit?
 splits_dir = Path(params['input_dir']) / params['splits_dir']
 
-### Source and target data sources
-## Set 1 - full analysis
-source_datasets = ["CCLE", "CTRPv2", "gCSI", "GDSCv1", "GDSCv2"]
-target_datasets = ["CCLE", "CTRPv2", "gCSI", "GDSCv1", "GDSCv2"]
-## Set 2 - smaller datasets
-# source_datasets = ["CCLE", "gCSI", "GDSCv1", "GDSCv2"]
-# target_datasets = ["CCLE", "gCSI", "GDSCv1", "GDSCv2"]
-# source_datasets = ["CCLE", "gCSI", "GDSCv2"]
-# target_datasets = ["CCLE", "gCSI", "GDSCv2"]
-# source_datasets = ["CCLE", "GDSCv1"]
-# target_datasets = ["CCLE", "gCSI", "GDSCv1", "GDSCv2"]
-## Set 3 - full analysis for a single source
-# source_datasets = ["CCLE"]
-# source_datasets = ["CTRPv2"]
-# target_datasets = ["CCLE", "CTRPv2", "gCSI", "GDSCv1", "GDSCv2"]
-# target_datasets = ["CCLE", "gCSI", "GDSCv1", "GDSCv2"]
-# target_datasets = ["CCLE", "gCSI", "GDSCv2"]
-## Set 4 - same source and target
-# source_datasets = ["CCLE"]
-# target_datasets = ["CCLE"]
-## Set 5 - single source and target
-# source_datasets = ["GDSCv1"]
-# target_datasets = ["CCLE"]
 
-only_cross_study = False
-# only_cross_study = True
-
-## Splits
-split_nums = []  # all splits
-# split_nums = [0]
-# split_nums = [4, 7]
-# split_nums = [1, 4, 7]
-# split_nums = [1, 3, 5, 7, 9]
-
-## Parameters of the experiment/run/workflow
-# epochs = 2
-# epochs = 30
-# epochs = 50
-# epochs = 70
-# epochs = 100
-# epochs = 150
-epochs = 200
+source_datasets = params["source_datasets"]
+target_datasets = params["target_datasets"]
+only_cross_study = params["only_cross_study"]
+split_nums = params["split_nums"]
+epochs = params["epochs"]
+cuda_name = params["cuda_name"]
 
 
 # ===============================================================
