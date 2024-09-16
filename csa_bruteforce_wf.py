@@ -184,7 +184,10 @@ for source_data_name in source_datasets:
             ]
             result = subprocess.run(preprocess_run, capture_output=True,
                                     text=True, check=True)
-            # print(result.stdout)
+            print("result_file_name_stdout", result_file_name_stdout)
+            print(result.stdout)
+            print("result_file_name_stderr", result_file_name_stderr)
+            print(result.stderr)
             result_file_name_stdout = MAIN_CSA_OUTDIR / f"{source_data_name}-{target_data_name}-{split}-preprocess-subprocess-stdout.txt"
             result_file_name_stderr = MAIN_CSA_OUTDIR / f"{source_data_name}-{target_data_name}-{split}-preprocess-subprocess-stderr.txt"
             
@@ -192,7 +195,7 @@ for source_data_name in source_datasets:
                 file.write(result.stdout)
             with open(result_file_name_stderr, 'w') as file:
                 file.write(result.stderr)
-            # print(result.stderr)
+            
             timer_preprocess.display_timer(print_fn)
 
             # p2 (p1): Train model
