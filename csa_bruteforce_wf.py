@@ -58,14 +58,14 @@ params = cfg.initialize_parameters(
     additional_definitions=csa_bruteforce_params,
     required=None
 )
-
+print("Loaded params")
 
 # Model scripts
 model_name = params["model_name"]
 preprocess_python_script = f'{model_name}_preprocess_improve.py'
 train_python_script = f'{model_name}_train_improve.py'
 infer_python_script = f'{model_name}_infer_improve.py'
-
+print("Created script names")
 # Specify dirs
 
 y_col_name = params['y_col_name']
@@ -76,11 +76,11 @@ MAIN_CSA_OUTDIR = Path(params["csa_outdir"]) # main output dir
 MAIN_ML_DATA_DIR = MAIN_CSA_OUTDIR / 'ml_data' # output_dir_pp, input_dir_train, input_dir_infer
 MAIN_MODEL_DIR = MAIN_CSA_OUTDIR / 'models' # output_dir_train, input_dir_infer
 MAIN_INFER_DIR = MAIN_CSA_OUTDIR / 'infer' # output_dir infer
-
+print("Created directory names")
 # Note! Here input_dir is the location of benchmark data
 # TODO Should we set input_dir (and output_dir) for each models scrit?
 splits_dir = Path(params['input_dir']) / params['splits_dir']
-
+print("Created splits path")
 
 source_datasets = params["source_datasets"]
 target_datasets = params["target_datasets"]
@@ -88,6 +88,7 @@ only_cross_study = params["only_cross_study"]
 split_nums = params["split_nums"]
 epochs = params["epochs"]
 cuda_name = params["cuda_name"]
+print("internal params")
 
 
 # ===============================================================
