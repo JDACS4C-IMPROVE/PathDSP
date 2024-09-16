@@ -2,7 +2,7 @@ csa_bruteforce_params = [
     {"name": "cuda_name",
      "type": str,
      "default": "cuda:0",
-     "help": "Cuda devide name.",
+     "help": "Cuda device name.",
     },
     {"name": "csa_outdir",
      "type": str,

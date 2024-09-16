@@ -77,10 +77,15 @@ MAIN_ML_DATA_DIR = MAIN_CSA_OUTDIR / 'ml_data' # output_dir_pp, input_dir_train,
 MAIN_MODEL_DIR = MAIN_CSA_OUTDIR / 'models' # output_dir_train, input_dir_infer
 MAIN_INFER_DIR = MAIN_CSA_OUTDIR / 'infer' # output_dir infer
 print("Created directory names")
+print("MAIN_CSA_OUTDIR: ", MAIN_CSA_OUTDIR)
+print("MAIN_ML_DATA_DIR: ", MAIN_ML_DATA_DIR)
+print("MAIN_MODEL_DIR: ", MAIN_MODEL_DIR)
+print("MAIN_INFER_DIR: ", MAIN_INFER_DIR)
 # Note! Here input_dir is the location of benchmark data
 # TODO Should we set input_dir (and output_dir) for each models scrit?
 splits_dir = Path(params['input_dir']) / params['splits_dir']
 print("Created splits path")
+print("splits_dir: ", splits_dir)
 
 source_datasets = params["source_datasets"]
 target_datasets = params["target_datasets"]
@@ -180,6 +185,13 @@ for source_data_name in source_datasets:
             result = subprocess.run(preprocess_run, capture_output=True,
                                     text=True, check=True)
             # print(result.stdout)
+            result_file_name_stdout = MAIN_CSA_OUTDIR / f"{source_data_name}-{target_data_name}-{split}-preprocess-subprocess-stdout.txt"
+            result_file_name_stderr = MAIN_CSA_OUTDIR / f"{source_data_name}-{target_data_name}-{split}-preprocess-subprocess-stderr.txt"
+            
+            with open(result_file_name_stdout, 'w') as file:
+                file.write(result.stdout)
+            with open(result_file_name_stderr, 'w') as file:
+                file.write(result.stderr)
             # print(result.stderr)
             timer_preprocess.display_timer(print_fn)
 
