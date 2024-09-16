@@ -21,7 +21,7 @@ csa_bruteforce_params = [
      "default": ["CCLE", "gCSI"],
      "help": "target_datasets for cross study analysis"
     },
-    {"name": "split",
+    {"name": "split_nums",
      "nargs" : "+",
      "type": str,
      "default": ['0'],
