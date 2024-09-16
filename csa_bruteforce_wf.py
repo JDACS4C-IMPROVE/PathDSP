@@ -58,7 +58,7 @@ params = cfg.initialize_parameters(
     additional_definitions=csa_bruteforce_params,
     required=None
 )
-params = frm.build_paths(params) # TODO move this to improvelib
+
 
 # Model scripts
 model_name = params["model_name"]
