@@ -23,6 +23,15 @@ def build_split_fname(source: str, split: int, phase: str):
     """ Build split file name. If file does not exist continue """
     return f"{source_data_name}_split_{split}_{phase}.txt"
 
+def save_captured_output(result, process, MAIN_CSA_OUTDIR, source_data_name, target_data_name, split):
+    result_file_name_stdout = MAIN_CSA_OUTDIR / f"{source_data_name}-{target_data_name}-{split}-{process}-stdout.txt"
+    result_file_name_stderr = MAIN_CSA_OUTDIR / f"{source_data_name}-{target_data_name}-{split}-{process}-stderr.txt"
+    with open(result_file_name_stdout, 'w') as file:
+        file.write(result.stdout)
+    with open(result_file_name_stderr, 'w') as file:
+        file.write(result.stderr)
+
+
 
 class Timer:
     """ Measure time. """
@@ -160,14 +169,6 @@ for source_data_name in source_datasets:
             # p1 (none): Preprocess train data
             # train_split_files = list((ig.splits_dir).glob(f"{source_data_name}_split_0_train*.txt"))  # placeholder for LC
             timer_preprocess = Timer()
-            # ml_data_path = graphdrp_preprocess_improve.main([
-            #     "--train_split_file", f"{source_data_name}_split_{split}_train.txt",
-            #     "--val_split_file", f"{source_data_name}_split_{split}_val.txt",
-            #     "--test_split_file", str(test_split_file_name),
-            #     "--input_dir", str(input_dir),
-            #     "--output_dir", str(output_dir),
-            #     "--y_col_name", y_col_name
-            # ])
             print_fn("\nPreprocessing")
             train_split_file = f"{source_data_name}_split_{split}_train.txt"
             val_split_file = f"{source_data_name}_split_{split}_val.txt"
@@ -185,17 +186,7 @@ for source_data_name in source_datasets:
             result = subprocess.run(preprocess_run, capture_output=True,
                                     text=True, check=True)
 
-            result_file_name_stdout = MAIN_CSA_OUTDIR / f"{source_data_name}-{target_data_name}-{split}-preprocess-subprocess-stdout.txt"
-            result_file_name_stderr = MAIN_CSA_OUTDIR / f"{source_data_name}-{target_data_name}-{split}-preprocess-subprocess-stderr.txt"
-            print("result_file_name_stdout", result_file_name_stdout)
-            print(result.stdout)
-            print("result_file_name_stderr", result_file_name_stderr)
-            print(result.stderr)
-            with open(result_file_name_stdout, 'w') as file:
-                file.write(result.stdout)
-            with open(result_file_name_stderr, 'w') as file:
-                file.write(result.stderr)
-            
+            save_captured_output(result, "preprocess", MAIN_CSA_OUTDIR, source_data_name, target_data_name, split)
             timer_preprocess.display_timer(print_fn)
 
             # p2 (p1): Train model
@@ -215,6 +206,7 @@ for source_data_name in source_datasets:
                 ]
                 result = subprocess.run(train_run, capture_output=True,
                                         text=True, check=True)
+                save_captured_output(result, "train", MAIN_CSA_OUTDIR, source_data_name, "none", split)
                 timer_train.display_timer(print_fn)
 
             # Infer
@@ -231,6 +223,7 @@ for source_data_name in source_datasets:
             ]
             result = subprocess.run(infer_run, capture_output=True,
                                     text=True, check=True)
+            save_captured_output(result, "infer", MAIN_CSA_OUTDIR, source_data_name, target_data_name, split)
             timer_infer.display_timer(print_fn)
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
