@@ -184,8 +184,8 @@ for source_data_name in source_datasets:
                   "--y_col_name", str(y_col_name)
             ]
             result = subprocess.run(preprocess_run, capture_output=True,
-                                    text=True, check=True)
-
+                                    text=True) #check=True
+            print(f"returncode = {result.returncode}")
             save_captured_output(result, "preprocess", MAIN_CSA_OUTDIR, source_data_name, target_data_name, split)
             timer_preprocess.display_timer(print_fn)
 
@@ -205,7 +205,8 @@ for source_data_name in source_datasets:
                       "--y_col_name", y_col_name
                 ]
                 result = subprocess.run(train_run, capture_output=True,
-                                        text=True, check=True)
+                                        text=True)
+                print(f"returncode = {result.returncode}")
                 save_captured_output(result, "train", MAIN_CSA_OUTDIR, source_data_name, "none", split)
                 timer_train.display_timer(print_fn)
 
@@ -222,7 +223,8 @@ for source_data_name in source_datasets:
                   "--calc_infer_scores", "true"
             ]
             result = subprocess.run(infer_run, capture_output=True,
-                                    text=True, check=True)
+                                    text=True)
+            print(f"returncode = {result.returncode}")
             save_captured_output(result, "infer", MAIN_CSA_OUTDIR, source_data_name, target_data_name, split)
             timer_infer.display_timer(print_fn)
 
