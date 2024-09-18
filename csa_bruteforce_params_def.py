@@ -1,3 +1,5 @@
+from improvelib.utils import str2bool
+
 csa_bruteforce_params = [
     {"name": "cuda_name",
      "type": str,
@@ -28,7 +30,7 @@ csa_bruteforce_params = [
      "help": "Split of the source datasets for CSA"
     },
     {"name": "only_cross_study",
-     "type": bool,
+     "type": str2bool,
      "default": False,
      "help": "If only cross study analysis is needed"
     },
@@ -41,6 +43,11 @@ csa_bruteforce_params = [
      "type": int,
      "default": 10,
      "help": "Number of epochs"
+    },
+    {"name": "reserved_system",
+     "type": str2bool,
+     "default": False,
+     "help": "If the system reserves GPUs. False for lambda and True for slurm systems."
     },
     
 ]

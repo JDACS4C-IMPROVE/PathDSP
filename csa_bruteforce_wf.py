@@ -8,6 +8,8 @@ from time import time
 from pathlib import Path
 
 import pandas as pd
+import torch
+
 
 # IMPROVE imports
 # from improvelib.initializer.config import Config
@@ -68,6 +70,9 @@ params = cfg.initialize_parameters(
     required=None
 )
 print("Loaded params")
+if not params["reserved_system"]:
+    torch.Tensor([0]).to(params["cuda_name"])
+    print("Reserved GPU: ", params["cuda_name"])
 
 # Model scripts
 model_name = params["model_name"]
