@@ -48,7 +48,7 @@ fdir = Path(__file__).resolve().parent
 y_col_name = "auc"
 # y_col_name = "auc1"
 torch.Tensor([0]).to(cuda_name)
-print("Reserved GPU: ", params["cuda_name"])
+print("Reserved GPU: ", cuda_name)
 
 maindir = Path(f"./{y_col_name}")
 MAIN_ML_DATA_DIR = Path(f"./{maindir}/ml.data")
