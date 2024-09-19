@@ -1,6 +1,6 @@
 """ Python implementation of cross-study analysis workflow """
 # cuda_name = "cuda:6"
-cuda_name = "cuda:7"
+cuda_name = "cuda:1"
 
 import os
 import subprocess
@@ -9,6 +9,7 @@ from time import time
 from pathlib import Path
 
 import pandas as pd
+import torch
 
 # IMPROVE imports
 from improve import framework as frm
@@ -19,7 +20,7 @@ from improve import framework as frm
 # TODO: change this for your model
 import PathDSP_preprocess_improve
 import PathDSP_train_improve
-import PathDSP_preprocess_improve
+import PathDSP_infer_improve
 
 # from ap_utils.classlogger import Logger
 # from ap_utils.utils import get_print_func, Timer
