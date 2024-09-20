@@ -44,10 +44,10 @@ csa_bruteforce_params = [
      "default": 10,
      "help": "Number of epochs"
     },
-    {"name": "reserved_system",
+    {"name": "uses_cuda_name",
      "type": str2bool,
-     "default": False,
-     "help": "If the system reserves GPUs. False for lambda and True for slurm systems."
+     "default": True,
+     "help": "Change to false if the model doesn't have a cuda_name parameter."
     },
     
 ]
