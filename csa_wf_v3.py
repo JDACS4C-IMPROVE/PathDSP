@@ -1,6 +1,6 @@
 """ Python implementation of cross-study analysis workflow """
 # cuda_name = "cuda:6"
-cuda_name = "cuda:1"
+cuda_name = "cuda:0"
 
 import os
 import subprocess
