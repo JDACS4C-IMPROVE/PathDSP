@@ -26,12 +26,10 @@ def build_split_fname(source: str, split: int, phase: str):
     return f"{source_data_name}_split_{split}_{phase}.txt"
 
 def save_captured_output(result, process, MAIN_CSA_OUTDIR, source_data_name, target_data_name, split):
-    result_file_name_stdout = MAIN_CSA_OUTDIR / f"{source_data_name}-{target_data_name}-{split}-{process}-stdout.txt"
-    result_file_name_stderr = MAIN_CSA_OUTDIR / f"{source_data_name}-{target_data_name}-{split}-{process}-stderr.txt"
+    result_file_name_stdout = MAIN_CSA_OUTDIR / f"{source_data_name}-{target_data_name}-{split}-{process}-log.txt"
     with open(result_file_name_stdout, 'w') as file:
         file.write(result.stdout)
-    with open(result_file_name_stderr, 'w') as file:
-        file.write(result.stderr)
+
 
 
 
@@ -188,8 +186,7 @@ for source_data_name in source_datasets:
                   "--output_dir", str(ml_data_dir),
                   "--y_col_name", str(y_col_name)
             ]
-            result = subprocess.run(preprocess_run, capture_output=True,
-                                    text=True) #check=True
+            result = subprocess.run(preprocess_run, stdout = subprocess.PIPE, stderr = subprocess.STDOUT, universal_newlines=True)
             print(f"returncode = {result.returncode}")
             save_captured_output(result, "preprocess", MAIN_CSA_OUTDIR, source_data_name, target_data_name, split)
             timer_preprocess.display_timer(print_fn)
@@ -212,7 +209,7 @@ for source_data_name in source_datasets:
                 result = subprocess.run(train_run, capture_output=True,
                                         text=True)
                 print(f"returncode = {result.returncode}")
-                save_captured_output(result, "train", MAIN_CSA_OUTDIR, source_data_name, "none", split)
+                #save_captured_output(result, "train", MAIN_CSA_OUTDIR, source_data_name, "none", split)
                 timer_train.display_timer(print_fn)
 
             # Infer
@@ -230,7 +227,7 @@ for source_data_name in source_datasets:
             result = subprocess.run(infer_run, capture_output=True,
                                     text=True)
             print(f"returncode = {result.returncode}")
-            save_captured_output(result, "infer", MAIN_CSA_OUTDIR, source_data_name, target_data_name, split)
+            #save_captured_output(result, "infer", MAIN_CSA_OUTDIR, source_data_name, target_data_name, split)
             timer_infer.display_timer(print_fn)
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
