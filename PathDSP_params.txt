@@ -1,9 +1,9 @@
 [Preprocess]
 data_format = .txt
 input_supp_data_dir = ./author_data
-train_split_file = gCSI_split_0_train.txt
-val_split_file = gCSI_split_0_val.txt
-test_split_file = gCSI_split_0_test.txt
+train_split_file = CCLE_split_0_train.txt
+val_split_file = CCLE_split_0_val.txt
+test_split_file = CCLE_split_0_test.txt
 y_data_files = [["response.tsv"]]
 x_data_canc_files = [["cancer_gene_expression.tsv", ["Gene_Symbol"]], ["cancer_mutation_count.tsv",["Gene_Symbol"]], ["cancer_discretized_copy_number.tsv", ["Gene_Symbol"]]]
 x_data_drug_files = [["drug_SMILES.tsv"]]
