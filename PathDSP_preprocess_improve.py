@@ -312,6 +312,7 @@ def prep_input(params):
             & (response_df["sample_id"].isin(common_sample_ids)),
             :,
         ]
+        frm.save_stage_ydf(ydf=response_df, stage=i, output_dir=params["output_dir"])
         comb_data_mtx = pd.DataFrame(
             {
                 "drug_id": response_df["drug_id"].values,
