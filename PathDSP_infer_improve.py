@@ -46,6 +46,8 @@ def run(params):
     start = datetime.now()
     test_true, test_pred = predicting(trained_net, device, data_loader=test_dl)
 
+    test_true = pd.Series(test_true)
+    test_pred = pd.Series(test_pred)
     test_true_untrans = test_true.apply(lambda x: 10 ** (x) - 0.01)
     test_pred_untrans = test_pred.apply(lambda x: 10 ** (x) - 0.01)
 
