@@ -277,13 +277,16 @@ def run(params):
     #val_true, val_pred = predicting(best_model, device, valid_dl) # (groud truth), (predictions)
     val_true, val_pred = predict(best_model, device, valid_dl) # (groud truth), (predictions)
 
+    #comb_data_mtx["response"] = np.log10(response_df[params["y_col_name"]].values + 0.01)
+    val_true_untrans = val_true.apply(lambda x: 10 ** (x) - 0.01)
+    val_pred_untrans = val_pred.apply(lambda x: 10 ** (x) - 0.01)
     # -----------------------------
     # [Req] Save raw predictions in dataframe
     # -----------------------------
     # import ipdb; ipdb.set_trace()
     frm.store_predictions_df(
-        y_true=val_true, 
-        y_pred=val_pred, 
+        y_true=val_true_untrans, 
+        y_pred=val_pred_untrans, 
         stage="val",
         y_col_name=params["y_col_name"],
         output_dir=params["output_dir"],
@@ -295,8 +298,8 @@ def run(params):
     # -----------------------------
     # import ipdb; ipdb.set_trace()
     val_scores = frm.compute_performance_scores(
-        y_true=val_true, 
-        y_pred=val_pred, 
+        y_true=val_true_untrans, 
+        y_pred=val_pred_untrans, 
         stage="val",
         metric_type=params["metric_type"],
         output_dir=params["output_dir"]
