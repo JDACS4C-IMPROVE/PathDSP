@@ -30,7 +30,7 @@ val_batch = 12
 loss = mse
 patience = 30
 y_col_name = auc
-cuda_name = cuda:5
+cuda_name = cuda:0
 dropout = 0.1
 
 [Infer]
