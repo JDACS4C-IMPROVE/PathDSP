@@ -1,8 +1,8 @@
 # PathDSP
 
-This repository demonstrates how to use the [IMPROVE library v0.1.0-alpha](https://jdacs4c-improve.github.io/docs/v0.1.0-alpha/) for building a drug response prediction (DRP) model using PathDSP, and provides examples with the benchmark [cross-study analysis (CSA) dataset](https://web.cels.anl.gov/projects/IMPROVE_FTP/candle/public/improve/benchmarks/single_drug_drp/benchmark-data-pilot1/csa_data/).
+This repository demonstrates how to use the [IMPROVE library v0.1.0-2024-09-27](https://jdacs4c-improve.github.io/docs/v0.1.0-alpha/) for building a drug response prediction (DRP) model using PathDSP, and provides examples with the benchmark [cross-study analysis (CSA) dataset](https://web.cels.anl.gov/projects/IMPROVE_FTP/candle/public/improve/benchmarks/single_drug_drp/benchmark-data-pilot1/csa_data/).
 
-This version, tagged as `v0.1.0-alpha`, introduces a new API which is designed to encourage broader adoption of IMPROVE and its curated models by the research community.
+This version, tagged as `v0.1.0-2024-09-27`, introduces a new API which is designed to encourage broader adoption of IMPROVE and its curated models by the research community.
 
 
 ## Dependencies
@@ -14,7 +14,7 @@ ML framework:
 + [Torch](https://pytorch.org/) -- deep learning framework for building the prediction model
 
 IMPROVE dependencies:
-+ [IMPROVE v0.1.0-alpha](https://jdacs4c-improve.github.io/docs/v0.1.0-alpha/) 
++ [IMPROVE v0.1.0-2024-09-27](https://jdacs4c-improve.github.io/docs/v0.1.0-alpha/) 
 
 
 
@@ -70,7 +70,7 @@ csa_data/raw_data/
 ```
 git clone https://github.com/JDACS4C-IMPROVE/PathDSP
 cd PathDSP
-git checkout develop
+git checkout v0.1.0-2024-09-27
 ```
 
 
@@ -89,7 +89,7 @@ source setup_improve.sh
 
 This will:
 1. Download cross-study analysis (CSA) benchmark data into `./csa_data/`.
-2. Clone IMPROVE repo (checkout tag `v0.0.3-beta`) outside the PathDSP model repo
+2. Clone IMPROVE repo (checkout tag `v0.1.0-2024-09-27`) outside the PathDSP model repo
 3. Set up env variables: `IMPROVE_DATA_DIR` (to `./csa_data/`) and `PYTHONPATH` (adds IMPROVE repo).
 4. Download the model-specific supplemental data (aka author data) and set up the env variable `AUTHOR_DATA_DIR`.
 
