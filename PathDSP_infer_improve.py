@@ -46,17 +46,23 @@ def run(params):
     start = datetime.now()
     test_true, test_pred = predicting(trained_net, device, data_loader=test_dl)
 
+    test_true = pd.Series(test_true)
+    test_pred = pd.Series(test_pred)
+    test_true_untrans = test_true.apply(lambda x: 10 ** (x) - 0.01)
+    test_pred_untrans = test_pred.apply(lambda x: 10 ** (x) - 0.01)
+
     frm.store_predictions_df(
-        y_true=test_true,
-        y_pred=test_pred, 
+        y_true=test_true_untrans,
+        y_pred=test_pred_untrans, 
         stage="test",
         y_col_name=params["y_col_name"],
-        output_dir=params["output_dir"]
+        output_dir=params["output_dir"],
+        input_dir=params["input_data_dir"]
     )
     if params["calc_infer_scores"]:
         test_scores = frm.compute_performance_scores(
-            y_true=test_true, 
-            y_pred=test_pred, 
+            y_true=test_true_untrans, 
+            y_pred=test_pred_untrans, 
             stage="test",
             metric_type=params["metric_type"],
             output_dir=params["output_dir"]
