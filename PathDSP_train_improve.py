@@ -278,7 +278,6 @@ def run(params):
     val_true, val_pred = predict(best_model, device, valid_dl) # (groud truth), (predictions)
 
     #comb_data_mtx["response"] = np.log10(response_df[params["y_col_name"]].values + 0.01)
-    print("val_true", val_true)
     val_true = pd.Series(val_true)
     val_pred = pd.Series(val_pred)
     val_true_untrans = val_true.apply(lambda x: 10 ** (x) - 0.01)
