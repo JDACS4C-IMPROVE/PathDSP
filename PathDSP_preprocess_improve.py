@@ -337,7 +337,8 @@ def prep_input(params):
         )
         
         auc_to_save = pd.Series(comb_data_mtx["response"])
-        auc_to_save = auc_to_save.apply(lambda x: 10 ** (x) - 0.01)
+        print(auc_to_save)
+        auc_to_save = pd.Series(auc_to_save.apply(lambda x: 10 ** (x) - 0.01))
         comb_data_mtx_to_save[params["y_col_name"]] = auc_to_save
         frm.save_stage_ydf(ydf=comb_data_mtx_to_save, stage=i, output_dir=params["output_dir"])
         pl.from_pandas(comb_data_mtx).write_csv(
