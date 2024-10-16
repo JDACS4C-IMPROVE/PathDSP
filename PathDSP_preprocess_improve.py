@@ -312,7 +312,7 @@ def prep_input(params):
             & (response_df["sample_id"].isin(common_sample_ids)),
             :,
         ]
-        frm.save_stage_ydf(ydf=response_df, stage=i, output_dir=params["output_dir"])
+        
         comb_data_mtx = pd.DataFrame(
             {
                 "drug_id": response_df["drug_id"].values,
@@ -329,6 +329,11 @@ def prep_input(params):
         ## add 0.01 to avoid possible inf values
         comb_data_mtx["response"] = np.log10(response_df[params["y_col_name"]].values + 0.01)
         comb_data_mtx = comb_data_mtx.dropna()
+        comb_data_mtx_to_save = pd.concat([comb_data_mtx["drug_id"], comb_data_mtx["sample_id"]], axis=1)
+        auc_to_save = pd.Series(comb_data_mtx["response"])
+        auc_to_save = auc_to_save.apply(lambda x: 10 ** (x) - 0.01)
+        comb_data_mtx_to_save[params["y_col_name"]] = auc_to_save
+        frm.save_stage_ydf(ydf=comb_data_mtx_to_save, stage=i, output_dir=params["output_dir"])
         pl.from_pandas(comb_data_mtx).write_csv(
             params["output_dir"] + "/" + frm.build_ml_data_file_name(data_format=params["data_format"], stage=i)
 , separator="\t", has_header=True
