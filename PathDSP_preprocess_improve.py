@@ -329,7 +329,13 @@ def prep_input(params):
         ## add 0.01 to avoid possible inf values
         comb_data_mtx["response"] = np.log10(response_df[params["y_col_name"]].values + 0.01)
         comb_data_mtx = comb_data_mtx.dropna()
-        comb_data_mtx_to_save = pd.concat([comb_data_mtx["drug_id"], comb_data_mtx["sample_id"]], axis=1)
+        comb_data_mtx_to_save = pd.DataFrame(
+            {
+            "drug_id": comb_data_mtx.index.get_level_values("drug_id"),
+            "sample_id": comb_data_mtx.index.get_level_values("sample_id")
+            }
+        )
+        
         auc_to_save = pd.Series(comb_data_mtx["response"])
         auc_to_save = auc_to_save.apply(lambda x: 10 ** (x) - 0.01)
         comb_data_mtx_to_save[params["y_col_name"]] = auc_to_save
