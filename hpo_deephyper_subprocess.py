@@ -57,7 +57,9 @@ if not MPI.Is_initialized():
 
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
+print(rank)
 size = comm.Get_size()
+print(size)
 #NCK local_rank = os.environ["PMI_LOCAL_RANK"]
 
 # CUDA_VISIBLE_DEVICES is now set via set_affinity_gpu_polaris.sh
