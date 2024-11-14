@@ -124,6 +124,14 @@ def run(job, optuna_trial=None):
     #     "--val_ml_data_dir", str(val_ml_data_dir),
     #     "--model_outdir", str(model_outdir_job_id),
     # ])
+    print("model env:", params['model_environment'])
+    print("script_name:", script_name)
+    print("ml_data_dir:", ml_data_dir)
+    print("model_outdir_job_id:", model_outdir_job_id)
+    print("learning_rate:", learning_rate)
+    print("batch_size:", batch_size)
+    print("params['epochs']:", params['epochs'])
+    print("CUDA_VISIBLE_DEVICES:", os.environ["CUDA_VISIBLE_DEVICES"])
     print("launch run")
     subprocess_res = subprocess.run(
         [

@@ -68,3 +68,22 @@ cd PathDSP
 qsub -v IMPROVE_env=../IMPROVE_env ./hpo_scale.sh
 ## for interactive node, you can run: mpirun -np 10 python hpo_deephyper_subprocess.py
 ```
+
+
+Lambda instructions
+Setup repo
+
+Install DeepHyper env
+
+module load openmpi
+conda create -n dh python=3.9 -y
+conda activate dh
+conda install gxx_linux-64 gcc_linu
+pip install "deephyper[default]"
+pip install mpi4py
+
+Set python path
+export PYTHONPATH=../IMPROVE
+
+Run
+mpirun -np 10 python hpo_deephyper_subprocess.py
