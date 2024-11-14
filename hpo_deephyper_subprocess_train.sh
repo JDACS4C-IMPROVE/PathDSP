@@ -22,15 +22,15 @@ source $conda_path/bin/activate $CONDA_ENV
 #source activate $CONDA_ENV
 echo "Activated conda env $CONDA_ENV"
 #model path, model name, epochs
-MODELPATH=$1
-MODELNAME=$2
-input_dir=$3
-output_dir=$4
-learning_rate=$5
-batch_size=$6
-epochs=$7
+SCRIPT=$1
+input_dir=$2
+output_dir=$3
+learning_rate=$4
+batch_size=$5
+epochs=$6
 #cuda_name=$6
-CUDA_VISIBLE_DEVICES=$8
+CUDA_VISIBLE_DEVICES=$7
+
 
 #echo "train_ml_data_dir: $train_ml_data_dir"
 #echo "val_ml_data_dir:   $val_ml_data_dir"
@@ -49,7 +49,7 @@ echo "CUDA_VISIBLE_DEVICES: $CUDA_VISIBLE_DEVICES"
 #CUDA_VISIBLE_DEVICES=6,7 python PathDSP_train_improve.py \
 #CUDA_VISIBLE_DEVICES=5
 #CUDA_VISIBLE_DEVICES=6,7
-CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES} python $MODELPATH/$MODELNAME_train_improve.py \
+CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES} python $SCRIPT \
     --input_dir $input_dir \
     --output_dir $output_dir \
     --epochs $epochs \

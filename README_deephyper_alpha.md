@@ -27,6 +27,7 @@ source $PWD/IMPROVE_env
 
 ## Perform preprocessing
 Run the preprocess script. This script taks around 40 mins to complete.
+The workflow assumes that your preprocessed data is at: "ml_data/{source}-{source}/split_{split}"
 
 ```
 ### if necessary, request an interactive node from polaris to testing purposes
@@ -37,7 +38,7 @@ Run the preprocess script. This script taks around 40 mins to complete.
 ```
 cd PathDSP
 conda activate $PathDSP_env
-python PathDSP_preprocess_improve.py --input_dir ./csa_data/raw_data
+python PathDSP_preprocess_improve.py --input_dir ./csa_data/raw_data --output_dir ./ml_data/CCLE-CCLE/split_0
 ```
 
 ## Perform HPO using singularity container across two nodes
@@ -63,5 +64,5 @@ qsub -v IMPROVE_env=../IMPROVE_env ./hpo_scale_singularity_debug.sh
 cd PathDSP
 # supply environment variables to qsub
 qsub -v IMPROVE_env=../IMPROVE_env ./hpo_scale.sh
-## for interactive node, you can run: mpirun -np 10 python hpo_subprocess.py
+## for interactive node, you can run: mpirun -np 10 python hpo_deephyper_subprocess.py
 ```
