@@ -18,6 +18,7 @@ import json
 import subprocess
 import pandas as pd
 import os
+import time
 import logging
 import mpi4py
 from deephyper.evaluator import Evaluator, profile
