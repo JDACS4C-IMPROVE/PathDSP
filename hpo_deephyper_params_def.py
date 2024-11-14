@@ -14,9 +14,6 @@ additional_definitions = [
      "default": 'PathDSP',
      "help": "Name of the deep learning model"
     },
-
-
-
     {"name": "model_scripts_dir",
      "type": str,
      "default": './', 

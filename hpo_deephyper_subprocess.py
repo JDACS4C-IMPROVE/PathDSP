@@ -97,7 +97,7 @@ ml_data_dir = f"ml_data/{params['source']}-{params['source']}/split_{params['spl
 model_outdir = f"{params['output_dir']}/{params['source']}/split_{params['split']}"
 log_dir = f"{params['output_dir']}_logs/"
 # subprocess_bashscript = "subprocess_train.sh"
-
+script_name = os.path.join(params['model_scripts_dir'],f"{params['model_name']}_train_improve.py")
 
 @profile
 def run(job, optuna_trial=None):
@@ -120,12 +120,13 @@ def run(job, optuna_trial=None):
     #     "--val_ml_data_dir", str(val_ml_data_dir),
     #     "--model_outdir", str(model_outdir_job_id),
     # ])
+    print("launch run")
     subprocess_res = subprocess.run(
         [
             "bash", 
             "subprocess_train.sh",
-             str(params['model_path']),
-             str(params['model_name']),
+             str(params['model_environment']),
+             str(script_name),
              str(ml_data_dir),
              str(model_outdir_job_id),
              str(learning_rate),

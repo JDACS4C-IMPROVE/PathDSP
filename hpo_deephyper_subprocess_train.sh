@@ -10,7 +10,7 @@
 # https://saturncloud.io/blog/activating-conda-environments-from-scripts-a-guide-for-data-scientists
 # https://stackoverflow.com/questions/34534513/calling-conda-source-activate-from-bash-script
 # This doesn't work w/o eval "$(conda shell.bash hook)"
-CONDA_ENV=$PathDSP_env
+CONDA_ENV=$1
 #echo "Allow conda commands in shell script by running 'conda shell.bash hook'"
 #eval "$(conda shell.bash hook)"
 echo "Activated conda commands in shell script"
@@ -22,14 +22,14 @@ source $conda_path/bin/activate $CONDA_ENV
 #source activate $CONDA_ENV
 echo "Activated conda env $CONDA_ENV"
 #model path, model name, epochs
-SCRIPT=$1
-input_dir=$2
-output_dir=$3
-learning_rate=$4
-batch_size=$5
-epochs=$6
+SCRIPT=$2
+input_dir=$3
+output_dir=$4
+learning_rate=$5
+batch_size=$6
+epochs=$7
 #cuda_name=$6
-CUDA_VISIBLE_DEVICES=$7
+CUDA_VISIBLE_DEVICES=$8
 
 
 #echo "train_ml_data_dir: $train_ml_data_dir"

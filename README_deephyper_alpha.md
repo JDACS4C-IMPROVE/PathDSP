@@ -9,6 +9,8 @@ git checkout develop
 
 ## install IMPROVE and download data
 source setup_improve.sh
+or 
+export PYTHONPATH=../IMPROVE
 
 ## define where to install PathDSP env
 export PathDSP_env=./PathDSP_env/
