@@ -31,17 +31,7 @@ import socket
 import hpo_deephyper_params_def
 from improvelib.applications.drug_response_prediction.config import DRPPreprocessConfig
 
-# Start time
-start_full_wf = time.time()
 
-# Initialize parameters for DeepHyper HPO
-filepath = Path(__file__).resolve().parent
-cfg = DRPPreprocessConfig() 
-params = cfg.initialize_parameters(
-    pathToModelDir=filepath,
-    default_config="hpo_deephyper_params.ini",
-    additional_definitions=hpo_deephyper_params_def.additional_definitions
-)
 
 # ---------------------
 # Enable using multiple GPUs
@@ -89,19 +79,22 @@ problem.add_hyperparameter((1e-6, 1e-2, "log-uniform"),
                            "learning_rate", default_value=0.001)
 # problem.add_hyperparameter((0, 0.5), "dropout", default_value=0.0)
 # problem.add_hyperparameter([True, False], "early_stopping", default_value=False)
+def prepare_parameters():
+    # Initialize parameters for DeepHyper HPO
+    filepath = Path(__file__).resolve().parent
+    cfg = DRPPreprocessConfig() 
+    params = cfg.initialize_parameters(
+        pathToModelDir=filepath,
+        default_config="hpo_deephyper_params.ini",
+        additional_definitions=hpo_deephyper_params_def.additional_definitions
+    )
 
-# ---------------------
-# Some IMPROVE settings
-# ---------------------
-# source = "GDSCv1"
-# split = 4
-# added model name
-# ini output_dir = dh_hpo_improve
-ml_data_dir = f"ml_data/{params['source']}-{params['source']}/split_{params['split']}"
-model_outdir = f"{params['output_dir']}/{params['source']}/split_{params['split']}"
-log_dir = f"{params['output_dir']}_logs/"
-# subprocess_bashscript = "subprocess_train.sh"
-script_name = os.path.join(params['model_scripts_dir'],f"{params['model_name']}_train_improve.py")
+    params['ml_data_dir'] = f"ml_data/{params['source']}-{params['source']}/split_{params['split']}"
+    params['model_outdir'] = f"{params['output_dir']}/{params['source']}/split_{params['split']}"
+    params['log_dir'] = f"{params['output_dir']}_logs/"
+    # subprocess_bashscript = "subprocess_train.sh"
+    params['script_name'] = os.path.join(params['model_scripts_dir'],f"{params['model_name']}_train_improve.py")
+    return params
 
 @profile
 def run(job, optuna_trial=None):
@@ -116,7 +109,7 @@ def run(job, optuna_trial=None):
     #     remap_hyperparameters(config)
     #     params.update(config)
 
-    model_outdir_job_id = model_outdir + f"/{job.id}"
+    model_outdir_job_id = params['model_outdir'] + f"/{job.id}"
     learning_rate = job.parameters["learning_rate"]
     batch_size = job.parameters["batch_size"]
     # val_scores = main_train_grapdrp([
@@ -125,8 +118,8 @@ def run(job, optuna_trial=None):
     #     "--model_outdir", str(model_outdir_job_id),
     # ])
     print("model env:", params['model_environment'])
-    print("script_name:", script_name)
-    print("ml_data_dir:", ml_data_dir)
+    print("script_name:", params['script_name'])
+    print("ml_data_dir:", params['ml_data_dir'])
     print("model_outdir_job_id:", model_outdir_job_id)
     print("learning_rate:", learning_rate)
     print("batch_size:", batch_size)
@@ -138,8 +131,8 @@ def run(job, optuna_trial=None):
             "bash", 
             "subprocess_train.sh",
              str(params['model_environment']),
-             str(script_name),
-             str(ml_data_dir),
+             str(params['script_name']),
+             str(params['ml_data_dir']),
              str(model_outdir_job_id),
              str(learning_rate),
              str(batch_size),
@@ -169,6 +162,10 @@ def run(job, optuna_trial=None):
 
 
 if __name__ == "__main__":
+    # Start time
+    start_full_wf = time.time()
+    global params
+    params = prepare_parameters()
     with Evaluator.create(
         run, method="mpicomm", method_kwargs={"callbacks": [TqdmCallback()]}
     ) as evaluator:
