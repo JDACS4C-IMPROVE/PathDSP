@@ -132,7 +132,7 @@ def run(job, optuna_trial=None):
     subprocess_res = subprocess.run(
         [
             "bash", 
-            "subprocess_train.sh",
+            "hpo_deephyper_subprocess_train.sh",
              str(params['model_environment']),
              str(params['script_name']),
              str(params['ml_data_dir']),
