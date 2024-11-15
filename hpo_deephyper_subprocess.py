@@ -176,7 +176,7 @@ if __name__ == "__main__":
             search = CBO(
                 problem,
                 evaluator,
-                log_dir=log_dir,
+                log_dir=params['log_dir'],
                 verbose=1,
             )
 
