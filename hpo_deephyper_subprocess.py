@@ -112,7 +112,7 @@ def run(job, optuna_trial=None):
     #     remap_hyperparameters(config)
     #     params.update(config)
 
-    model_outdir_job_id = params['model_outdir'] + f"/{job.id}"
+    model_outdir_job_id = Path(params['model_outdir'] + f"/{job.id}")
     learning_rate = job.parameters["learning_rate"]
     batch_size = job.parameters["batch_size"]
     # val_scores = main_train_grapdrp([
@@ -147,7 +147,7 @@ def run(job, optuna_trial=None):
     )
     # Logger
     print(f"returncode = {subprocess_res.returncode}")
-    result_file_name_stdout = Path(model_outdir_job_id) / 'logs.txt'
+    result_file_name_stdout = model_outdir_job_id / 'logs.txt'
     if model_outdir_job_id.exists() is False: # If subprocess fails, model_dir may not be created and we need to write the log files in model_dir
         os.makedirs(model_outdir_job_id, exist_ok=True)
     with open(result_file_name_stdout, 'w') as file:
