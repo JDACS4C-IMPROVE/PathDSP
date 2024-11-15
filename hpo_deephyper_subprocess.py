@@ -94,6 +94,7 @@ def prepare_parameters():
     params['log_dir'] = f"{params['output_dir']}_logs/"
     # subprocess_bashscript = "subprocess_train.sh"
     params['script_name'] = os.path.join(params['model_scripts_dir'],f"{params['model_name']}_train_improve.py")
+    print(params)
     return params
 
 @profile
