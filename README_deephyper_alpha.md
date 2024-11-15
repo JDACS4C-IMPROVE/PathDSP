@@ -82,8 +82,11 @@ conda install gxx_linux-64 gcc_linu
 pip install "deephyper[default]"
 pip install mpi4py
 
-Set python path
+Each time:
+Set python path (in repo)
 export PYTHONPATH=../IMPROVE
+module load openmpi 
+conda activate dh
 
 Run
 mpirun -np 10 python hpo_deephyper_subprocess.py

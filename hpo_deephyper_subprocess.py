@@ -142,7 +142,13 @@ def run(job, optuna_trial=None):
         ], 
         capture_output=True, text=True, check=True
     )
-    
+    # Logger
+    print(f"returncode = {subprocess_res.returncode}")
+    result_file_name_stdout = model_outdir_job_id / 'logs.txt'
+    if model_outdir_job_id.exists() is False: # If subprocess fails, model_dir may not be created and we need to write the log files in model_dir
+        os.makedirs(model_outdir_job_id, exist_ok=True)
+    with open(result_file_name_stdout, 'w') as file:
+        file.write(subprocess_res.stdout)
     # print(subprocess_res.stdout)
     # print(subprocess_res.stderr)
 
