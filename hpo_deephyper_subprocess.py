@@ -157,7 +157,7 @@ def run(job, optuna_trial=None):
 
     # Load val_scores and get val_loss
     # f = open(model_outdir + "/val_scores.json")
-    f = open(model_outdir_job_id + "/val_scores.json")
+    f = open(model_outdir_job_id / "val_scores.json")
     val_scores = json.load(f)
     objective = -val_scores["val_loss"]
     # print("objective:", objective)
