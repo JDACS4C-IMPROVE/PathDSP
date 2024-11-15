@@ -79,25 +79,7 @@ problem.add_hyperparameter((1e-6, 1e-2, "log-uniform"),
                            "learning_rate", default_value=0.001)
 # problem.add_hyperparameter((0, 0.5), "dropout", default_value=0.0)
 # problem.add_hyperparameter([True, False], "early_stopping", default_value=False)
-def prepare_parameters():
-    # Initialize parameters for DeepHyper HPO
-    filepath = Path(__file__).resolve().parent
-    cfg = DRPPreprocessConfig() 
-    params = cfg.initialize_parameters(
-        pathToModelDir=filepath,
-        default_config="hpo_deephyper_params.ini",
-        additional_definitions=hpo_deephyper_params_def.additional_definitions
-    )
 
-    params['ml_data_dir'] = f"ml_data/{params['source']}-{params['source']}/split_{params['split']}"
-    params['model_outdir'] = f"{params['output_dir']}/{params['source']}/split_{params['split']}"
-    params['log_dir'] = f"{params['output_dir']}_logs/"
-    # subprocess_bashscript = "subprocess_train.sh"
-    params['script_name'] = os.path.join(params['model_scripts_dir'],f"{params['model_name']}_train_improve.py")
-    print("NATASHA LOOK HERE")
-    print(params)
-    print("NATASHA DONE LOOK HERE")
-    return params
 
 @profile
 def run(job, optuna_trial=None):
@@ -175,7 +157,24 @@ if __name__ == "__main__":
     # Start time
     start_full_wf = time.time()
     global params
-    params = prepare_parameters()
+    # Initialize parameters for DeepHyper HPO
+    filepath = Path(__file__).resolve().parent
+    cfg = DRPPreprocessConfig() 
+    params = cfg.initialize_parameters(
+        pathToModelDir=filepath,
+        default_config="hpo_deephyper_params.ini",
+        additional_definitions=hpo_deephyper_params_def.additional_definitions
+    )
+
+    params['ml_data_dir'] = f"ml_data/{params['source']}-{params['source']}/split_{params['split']}"
+    params['model_outdir'] = f"{params['output_dir']}/{params['source']}/split_{params['split']}"
+    params['log_dir'] = f"{params['output_dir']}_logs/"
+    # subprocess_bashscript = "subprocess_train.sh"
+    params['script_name'] = os.path.join(params['model_scripts_dir'],f"{params['model_name']}_train_improve.py")
+    print("NATASHA LOOK HERE")
+    print(params)
+    print("NATASHA DONE LOOK HERE")
+    
     with Evaluator.create(
         run, method="mpicomm", method_kwargs={"callbacks": [TqdmCallback()]}
     ) as evaluator:
