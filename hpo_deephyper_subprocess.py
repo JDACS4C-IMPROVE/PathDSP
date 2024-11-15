@@ -197,7 +197,7 @@ if __name__ == "__main__":
             max_evals = 10
             # max_evals = 100
             results = search.search(max_evals=max_evals)
-            results = results.sort_values("m:val_loss", ascending=True)
+            #results = results.sort_values("m:val_loss", ascending=True)
             results.to_csv(model_outdir + "/hpo_results.csv", index=False)
     #print("current node: ", socket.gethostname(), "; current rank: ", rank, "; local rank", local_rank, "; CUDA_VISIBLE_DEVICE is set to: ", os.environ["CUDA_VISIBLE_DEVICES"])
     print("Finished deephyper HPO.")
