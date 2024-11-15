@@ -34,16 +34,15 @@ CUDA_VISIBLE_DEVICES=$8
 
 #echo "train_ml_data_dir: $train_ml_data_dir"
 #echo "val_ml_data_dir:   $val_ml_data_dir"
+echo "CONDA_ENV:      $CONDA_ENV"
+echo "SCRIPT:      $SCRIPT"
 echo "input_dir:      $input_dir"
 echo "output_dir:      $output_dir"
 echo "learning_rate:      $learning_rate"
 echo "batch_size:      $batch_size"
-#echo "cuda_name:       $cuda_name"
+echo "epochs:      $epochs"
 echo "CUDA_VISIBLE_DEVICES: $CUDA_VISIBLE_DEVICES"
 
-# epochs=10
-#epochs=10
-# epochs=50
 
 # All train outputs are saved in params["model_outdir"]
 #CUDA_VISIBLE_DEVICES=6,7 python PathDSP_train_improve.py \

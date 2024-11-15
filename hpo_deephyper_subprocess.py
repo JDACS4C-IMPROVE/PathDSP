@@ -140,7 +140,6 @@ def run(job, optuna_trial=None):
              str(learning_rate),
              str(batch_size),
              str(params['epochs']),
-             #str(cuda_name)
              str(os.environ["CUDA_VISIBLE_DEVICES"])
         ], 
         stdout=subprocess.PIPE,
