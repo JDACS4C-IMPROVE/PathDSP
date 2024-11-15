@@ -164,7 +164,7 @@ def run(job, optuna_trial=None):
     # print("objective:", objective)
 
     # Checkpoint the model weights
-    with open(f"{log_dir}/model_{job.id}.pkl", "w") as f:
+    with open(f"{params['log_dir']}/model_{job.id}.pkl", "w") as f:
         f.write("model weights")
 
     # return score
