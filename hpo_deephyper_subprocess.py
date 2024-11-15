@@ -160,7 +160,7 @@ def run(job, optuna_trial=None):
     # f = open(model_outdir + "/val_scores.json")
     f = open(model_outdir_job_id / "val_scores.json")
     val_scores = json.load(f)
-    objective = -val_scores["val_loss"]
+    objective = -val_scores[params['val_loss']]
     # print("objective:", objective)
 
     # Checkpoint the model weights

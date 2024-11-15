@@ -49,5 +49,10 @@ additional_definitions = [
      "type": str,
      "default": '',
      "help": "Singularity image file of the model"
+    },
+    {"name": "val_loss",
+     "type": str,
+     "default": 'mse',
+     "help": "Type of loss for validation"
     }
     ]
