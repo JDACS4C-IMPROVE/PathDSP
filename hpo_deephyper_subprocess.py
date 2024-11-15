@@ -143,7 +143,9 @@ def run(job, optuna_trial=None):
              #str(cuda_name)
              str(os.environ["CUDA_VISIBLE_DEVICES"])
         ], 
-        capture_output=True, text=True, check=True
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        universal_newlines=True
     )
     # Logger
     print(f"returncode = {subprocess_res.returncode}")
