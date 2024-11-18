@@ -57,7 +57,7 @@ additional_definitions = [
     },
     {"name": "max_evals",
      "type": int,
-     "default": 10,
+     "default": 20,
      "help": "Number of evaluations"
     }
     ]
