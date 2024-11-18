@@ -146,7 +146,7 @@ def run(job, optuna_trial=None):
     # print("objective:", objective)
 
     # Checkpoint the model weights
-    with open(f"{params['log_dir']}/model_{job.id}.pkl", "w") as f:
+    with open(f"{params['output_dir']}/model_{job.id}.pkl", "w") as f:
         f.write("model weights")
 
     # return score
@@ -168,7 +168,7 @@ if __name__ == "__main__":
 
     params['ml_data_dir'] = f"ml_data/{params['source']}-{params['source']}/split_{params['split']}"
     params['model_outdir'] = f"{params['output_dir']}/{params['source']}/split_{params['split']}"
-    params['log_dir'] = f"{params['output_dir']}_logs/"
+    #params['log_dir'] = f"{params['output_dir']}_logs/"
     # subprocess_bashscript = "subprocess_train.sh"
     params['script_name'] = os.path.join(params['model_scripts_dir'],f"{params['model_name']}_train_improve.py")
     print("NATASHA LOOK HERE")
@@ -185,7 +185,7 @@ if __name__ == "__main__":
             search = CBO(
                 problem,
                 evaluator,
-                log_dir=params['log_dir'],
+                log_dir=params['output_dir'],
                 verbose=1,
             )
 
@@ -197,6 +197,6 @@ if __name__ == "__main__":
             # max_evals = 100
             results = search.search(max_evals=max_evals)
             results = results.sort_values(f"m:{params['val_loss']}", ascending=True)
-            results.to_csv("hpo_results.csv", index=False)
+            results.to_csv(f"{params['output_dir']}/hpo_results.csv", index=False)
     #print("current node: ", socket.gethostname(), "; current rank: ", rank, "; local rank", local_rank, "; CUDA_VISIBLE_DEVICE is set to: ", os.environ["CUDA_VISIBLE_DEVICES"])
     print("Finished deephyper HPO.")
