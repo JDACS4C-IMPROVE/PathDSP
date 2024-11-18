@@ -47,7 +47,7 @@ if not MPI.Is_initialized():
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 size = comm.Get_size()
-local_rank = os.environ["PMI_LOCAL_RANK"]
+#local_rank = os.environ["PMI_LOCAL_RANK"]
 
 # CUDA_VISIBLE_DEVICES is now set via set_affinity_gpu_polaris.sh
 # uncomment the below commands if running via interactive node
@@ -155,6 +155,6 @@ if __name__ == "__main__":
             results = search.search(max_evals=params['max_evals'])
             results = results.sort_values(f"m:{params['val_loss']}", ascending=True)
             results.to_csv(f"{params['output_dir']}/hpo_results.csv", index=False)
-    print("current node: ", socket.gethostname(), "; current rank: ", rank, "; local rank", local_rank, "; CUDA_VISIBLE_DEVICE is set to: ", os.environ["CUDA_VISIBLE_DEVICES"])
+    print("current node: ", socket.gethostname(), "; current rank: ", rank, "; CUDA_VISIBLE_DEVICE is set to: ", os.environ["CUDA_VISIBLE_DEVICES"])
     print("Finished deephyper HPO.")
     print(params['max_evals'])
