@@ -59,5 +59,10 @@ additional_definitions = [
      "type": int,
      "default": 20,
      "help": "Number of evaluations"
+    },
+    {"name": "interactive_session",
+     "type": bool,
+     "default": True,
+     "help": "Are you using an interactive session?"
     }
     ]
