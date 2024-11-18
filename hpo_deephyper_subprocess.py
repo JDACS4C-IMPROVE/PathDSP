@@ -30,7 +30,21 @@ import socket
 import hpo_deephyper_params_def
 from improvelib.applications.drug_response_prediction.config import DRPPreprocessConfig
 
-
+# Initialize parameters for DeepHyper HPO
+filepath = Path(__file__).resolve().parent
+cfg = DRPPreprocessConfig() 
+global params
+params = cfg.initialize_parameters(
+    pathToModelDir=filepath,
+    default_config="hpo_deephyper_params.ini",
+    additional_definitions=hpo_deephyper_params_def.additional_definitions
+)
+output_dir = Path(params['output_dir'])
+if output_dir.exists() is False:
+    os.makedirs(output_dir, exist_ok=True)
+params['ml_data_dir'] = f"ml_data/{params['source']}-{params['source']}/split_{params['split']}"
+params['model_outdir'] = f"{params['output_dir']}/{params['source']}/split_{params['split']}"
+params['script_name'] = os.path.join(params['model_scripts_dir'],f"{params['model_name']}_train_improve.py")
 
 # ---------------------
 # Enable using multiple GPUs
@@ -125,22 +139,6 @@ def run(job, optuna_trial=None):
 
 
 if __name__ == "__main__":
-    # Initialize parameters for DeepHyper HPO
-    filepath = Path(__file__).resolve().parent
-    cfg = DRPPreprocessConfig() 
-    global params
-    params = cfg.initialize_parameters(
-        pathToModelDir=filepath,
-        default_config="hpo_deephyper_params.ini",
-        additional_definitions=hpo_deephyper_params_def.additional_definitions
-    )
-    output_dir = Path(params['output_dir'])
-    if output_dir.exists() is False:
-        os.makedirs(output_dir, exist_ok=True)
-    params['ml_data_dir'] = f"ml_data/{params['source']}-{params['source']}/split_{params['split']}"
-    params['model_outdir'] = f"{params['output_dir']}/{params['source']}/split_{params['split']}"
-    params['script_name'] = os.path.join(params['model_scripts_dir'],f"{params['model_name']}_train_improve.py")
-    
     with Evaluator.create(
         run, method="mpicomm", method_kwargs={"callbacks": [TqdmCallback()]}
     ) as evaluator:
