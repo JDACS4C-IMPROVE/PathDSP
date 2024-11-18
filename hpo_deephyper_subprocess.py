@@ -135,8 +135,9 @@ if __name__ == "__main__":
         default_config="hpo_deephyper_params.ini",
         additional_definitions=hpo_deephyper_params_def.additional_definitions
     )
-    if params['output_dir'].exists() is False:
-        os.makedirs(params['output_dir'], exist_ok=True)
+    output_dir = Path(params['output_dir'])
+    if output_dir.exists() is False:
+        os.makedirs(output_dir, exist_ok=True)
     params['ml_data_dir'] = f"ml_data/{params['source']}-{params['source']}/split_{params['split']}"
     params['model_outdir'] = f"{params['output_dir']}/{params['source']}/split_{params['split']}"
     params['script_name'] = os.path.join(params['model_scripts_dir'],f"{params['model_name']}_train_improve.py")
