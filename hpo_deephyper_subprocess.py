@@ -3,8 +3,7 @@ Before running this script, first need to preprocess the data.
 This can be done by running preprocess_example.sh
 
 It is assumed that the csa benchmark data is downloaded via download_csa.sh
-and the env vars $IMPROVE_DATA_DIR and $PYTHONPATH are set:
-export IMPROVE_DATA_DIR="./csa_data/"
+and the env vars $PYTHONPATH is set:
 export PYTHONPATH=$PYTHONPATH:/path/to/IMPROVE_lib
 
 It also assumes that your processed training data is at: "ml_data/{source}-{source}/split_{split}"
@@ -83,34 +82,11 @@ problem.add_hyperparameter((1e-6, 1e-2, "log-uniform"),
 
 @profile
 def run(job, optuna_trial=None):
-
-    # config = copy.deepcopy(job.parameters)
-    # params = {
-    #     "epochs": DEEPHYPER_BENCHMARK_MAX_EPOCHS,
-    #     "timeout": DEEPHYPER_BENCHMARK_TIMEOUT,
-    #     "verbose": False,
-    # }
-    # if len(config) > 0:
-    #     remap_hyperparameters(config)
-    #     params.update(config)
-
     model_outdir_job_id = Path(params['model_outdir'] + f"/{job.id}")
     learning_rate = job.parameters["learning_rate"]
     batch_size = job.parameters["batch_size"]
-    # val_scores = main_train_grapdrp([
-    #     "--train_ml_data_dir", str(train_ml_data_dir),
-    #     "--val_ml_data_dir", str(val_ml_data_dir),
-    #     "--model_outdir", str(model_outdir_job_id),
-    # ])
-    print("model env:", params['model_environment'])
-    print("script_name:", params['script_name'])
-    print("ml_data_dir:", params['ml_data_dir'])
-    print("model_outdir_job_id:", model_outdir_job_id)
-    print("learning_rate:", learning_rate)
-    print("batch_size:", batch_size)
-    print("params['epochs']:", params['epochs'])
-    print("CUDA_VISIBLE_DEVICES:", os.environ["CUDA_VISIBLE_DEVICES"])
-    print("launch run")
+
+    print(f"Launching run: batch_size={batch_size}, learning_rate={learning_rate}")
     subprocess_res = subprocess.run(
         [
             "bash", 
@@ -135,15 +111,11 @@ def run(job, optuna_trial=None):
         os.makedirs(model_outdir_job_id, exist_ok=True)
     with open(result_file_name_stdout, 'w') as file:
         file.write(subprocess_res.stdout)
-    # print(subprocess_res.stdout)
-    # print(subprocess_res.stderr)
 
     # Load val_scores and get val_loss
-    # f = open(model_outdir + "/val_scores.json")
     f = open(model_outdir_job_id / "val_scores.json")
     val_scores = json.load(f)
     objective = -val_scores[params['val_loss']]
-    # print("objective:", objective)
 
     # Checkpoint the model weights
     with open(f"{params['output_dir']}/model_{job.id}.pkl", "w") as f:
@@ -154,12 +126,10 @@ def run(job, optuna_trial=None):
 
 
 if __name__ == "__main__":
-    # Start time
-    start_full_wf = time.time()
-    global params
     # Initialize parameters for DeepHyper HPO
     filepath = Path(__file__).resolve().parent
     cfg = DRPPreprocessConfig() 
+    global params
     params = cfg.initialize_parameters(
         pathToModelDir=filepath,
         default_config="hpo_deephyper_params.ini",
@@ -168,12 +138,7 @@ if __name__ == "__main__":
 
     params['ml_data_dir'] = f"ml_data/{params['source']}-{params['source']}/split_{params['split']}"
     params['model_outdir'] = f"{params['output_dir']}/{params['source']}/split_{params['split']}"
-    #params['log_dir'] = f"{params['output_dir']}_logs/"
-    # subprocess_bashscript = "subprocess_train.sh"
     params['script_name'] = os.path.join(params['model_scripts_dir'],f"{params['model_name']}_train_improve.py")
-    print("NATASHA LOOK HERE")
-    print(params)
-    print("NATASHA DONE LOOK HERE")
     
     with Evaluator.create(
         run, method="mpicomm", method_kwargs={"callbacks": [TqdmCallback()]}
@@ -181,21 +146,13 @@ if __name__ == "__main__":
 
         if evaluator is not None:
             print(problem)
-
             search = CBO(
                 problem,
                 evaluator,
                 log_dir=params['output_dir'],
                 verbose=1,
             )
-
-            # max_evals = 2
-            # max_evals = 4
-            # max_evals = 10
-            # max_evals = 20
-            max_evals = 10
-            # max_evals = 100
-            results = search.search(max_evals=max_evals)
+            results = search.search(max_evals=params['max_evals'])
             results = results.sort_values(f"m:{params['val_loss']}", ascending=True)
             results.to_csv(f"{params['output_dir']}/hpo_results.csv", index=False)
     #print("current node: ", socket.gethostname(), "; current rank: ", rank, "; local rank", local_rank, "; CUDA_VISIBLE_DEVICE is set to: ", os.environ["CUDA_VISIBLE_DEVICES"])

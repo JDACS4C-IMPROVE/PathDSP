@@ -54,5 +54,10 @@ additional_definitions = [
      "type": str,
      "default": 'mse',
      "help": "Type of loss for validation"
+    },
+    {"name": "max_evals",
+     "type": int,
+     "default": 10,
+     "help": "Number of evaluations"
     }
     ]
