@@ -24,21 +24,10 @@ additional_definitions = [
      "default": '',
      "help": "Name of your model conda environment"
     },
-    {"name": "hyperparameters_file",
-     "type": str,
-     "default": 'hyperparameters_default.json',
-     "help": "json file containing optimized hyperparameters per dataset"
-    },
     {"name": "epochs",
      "type": int,
      "default": 10,
      "help": "Number of epochs"
-    },
-    {"name": "available_accelerators",
-     "nargs" : "+",
-     "type": str,
-     "default": ["0", "1"],
-     "help": "GPU IDs to assign jobs"
     },
     {"name": "use_singularity",
      "type": bool,

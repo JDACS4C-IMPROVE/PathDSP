@@ -2,13 +2,11 @@
 Before running this script, first need to preprocess the data.
 This can be done by running preprocess_example.sh
 
-It is assumed that the csa benchmark data is downloaded via download_csa.sh
 and the env vars $PYTHONPATH is set:
 export PYTHONPATH=$PYTHONPATH:/path/to/IMPROVE_lib
 
-It also assumes that your processed training data is at: "ml_data/{source}-{source}/split_{split}"
-validation data is at: "ml_data/{source}-{source}/split_{split}"
-model output files will be saved at "dh_hpo_improve/{source}/split_{split}"
+It also assumes that your processed training and validation data is in input_dir.
+Model output files will be saved in output_dir/{source}/split_{split}.
 
 mpirun -np 10 python hpo_subprocess.py
 """
@@ -30,7 +28,9 @@ import socket
 import hpo_deephyper_params_def
 from improvelib.applications.drug_response_prediction.config import DRPPreprocessConfig
 
+# ---------------------
 # Initialize parameters for DeepHyper HPO
+# ---------------------
 filepath = Path(__file__).resolve().parent
 cfg = DRPPreprocessConfig() 
 global params
@@ -42,7 +42,7 @@ params = cfg.initialize_parameters(
 output_dir = Path(params['output_dir'])
 if output_dir.exists() is False:
     os.makedirs(output_dir, exist_ok=True)
-params['ml_data_dir'] = f"ml_data/{params['source']}-{params['source']}/split_{params['split']}"
+#params['ml_data_dir'] = f"ml_data/{params['source']}-{params['source']}/split_{params['split']}"
 params['model_outdir'] = f"{params['output_dir']}/{params['source']}/split_{params['split']}"
 params['script_name'] = os.path.join(params['model_scripts_dir'],f"{params['model_name']}_train_improve.py")
 
@@ -106,7 +106,7 @@ def run(job, optuna_trial=None):
             "hpo_deephyper_subprocess_train.sh",
              str(params['model_environment']),
              str(params['script_name']),
-             str(params['ml_data_dir']),
+             str(params['input_dir']),
              str(model_outdir_job_id),
              str(learning_rate),
              str(batch_size),
