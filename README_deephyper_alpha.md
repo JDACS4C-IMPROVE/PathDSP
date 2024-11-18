@@ -84,9 +84,10 @@ pip install mpi4py
 
 Each time:
 Set python path (in repo)
-export PYTHONPATH=../IMPROVE
+
 module load openmpi 
 conda activate dh
+export PYTHONPATH=../IMPROVE
 
 Run
 mpirun -np 10 python hpo_deephyper_subprocess.py
