@@ -5,7 +5,7 @@ This can be done by running preprocess_example.sh
 and the env vars $PYTHONPATH is set:
 export PYTHONPATH=$PYTHONPATH:/path/to/IMPROVE_lib
 
-It also assumes that your processed training and validation data is in input_dir.
+It also assumes that your processed training and validation data is in ml_data_dir.
 Model output files will be saved in output_dir/{source}/split_{split}.
 
 mpirun -np 10 python hpo_subprocess.py
@@ -106,7 +106,7 @@ def run(job, optuna_trial=None):
             "hpo_deephyper_subprocess_train.sh",
              str(params['model_environment']),
              str(params['script_name']),
-             str(params['input_dir']),
+             str(params['ml_data_dir']),
              str(model_outdir_job_id),
              str(learning_rate),
              str(batch_size),

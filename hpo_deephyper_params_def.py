@@ -53,5 +53,10 @@ additional_definitions = [
      "type": bool,
      "default": True,
      "help": "Are you using an interactive session?"
+    },
+    {"name": "ml_data_dir",
+     "type": str,
+     "default": './',
+     "help": "Location of the preprocessed data."
     }
     ]
