@@ -26,6 +26,7 @@ from deephyper.search.hps import CBO
 from mpi4py import MPI
 import socket
 import hpo_deephyper_params_def
+from hpo_deephyper_hyperparameters import hyperparams
 from improvelib.applications.drug_response_prediction.config import DRPPreprocessConfig
 
 # ---------------------
@@ -86,9 +87,18 @@ logging.basicConfig(
 # ---------------------
 problem = HpProblem()
 
-problem.add_hyperparameter((8, 512, "log-uniform"), "batch_size", default_value=64)
-problem.add_hyperparameter((1e-6, 1e-2, "log-uniform"),
-                           "learning_rate", default_value=0.001)
+for hp in hyperparams:
+    if hp['type'] == "categorical":
+        print("not implemented yet")
+    else:
+        if hp['log_uniform']:
+            problem.add_hyperparameter((hp['min'], hp['max'], "log-uniform"), 
+                                       hp['name'], default_value=hp['default'])
+        else:
+            problem.add_hyperparameter((hp['min'], hp['max']), 
+                                       hp['name'], default_value=hp['default'])
+
+
 # problem.add_hyperparameter((0, 0.5), "dropout", default_value=0.0)
 # problem.add_hyperparameter([True, False], "early_stopping", default_value=False)
 
