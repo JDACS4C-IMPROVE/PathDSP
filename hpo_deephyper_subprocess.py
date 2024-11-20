@@ -98,6 +98,8 @@ for hp in hyperparams:
             problem.add_hyperparameter((hp['min'], hp['max']), 
                                        hp['name'], default_value=hp['default'])
 
+params['hyperparams'] = [d['name'] for d in hyperparams]
+
 
 # problem.add_hyperparameter((0, 0.5), "dropout", default_value=0.0)
 # problem.add_hyperparameter([True, False], "early_stopping", default_value=False)

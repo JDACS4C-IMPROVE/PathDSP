@@ -11,51 +11,37 @@
 # https://stackoverflow.com/questions/34534513/calling-conda-source-activate-from-bash-script
 # This doesn't work w/o eval "$(conda shell.bash hook)"
 CONDA_ENV=$1
-#echo "Allow conda commands in shell script by running 'conda shell.bash hook'"
-#eval "$(conda shell.bash hook)"
 echo "Activated conda commands in shell script"
-#conda activate $CONDA_ENV
-#source activate $CONDA_ENV
 conda_path=$(dirname $(dirname $(which conda)))
 source $conda_path/bin/activate $CONDA_ENV
-#source /soft/datascience/conda/2023-10-04/mconda3/bin/activate $CONDA_ENV
-#source activate $CONDA_ENV
 echo "Activated conda env $CONDA_ENV"
-#model path, model name, epochs
+
+# get mandatory arguments
 SCRIPT=$2
 input_dir=$3
 output_dir=$4
-learning_rate=$5
-batch_size=$6
-epochs=$7
-#cuda_name=$6
-CUDA_VISIBLE_DEVICES=$8
+epochs=$5
+CUDA_VISIBLE_DEVICES=$6
+
+command="python $SCRIPT --input_dir $input_dir --output_dir $output_dir --epochs $epochs "
 
 
-#echo "train_ml_data_dir: $train_ml_data_dir"
-#echo "val_ml_data_dir:   $val_ml_data_dir"
-echo "CONDA_ENV:      $CONDA_ENV"
-echo "SCRIPT:      $SCRIPT"
-echo "input_dir:      $input_dir"
-echo "output_dir:      $output_dir"
-echo "learning_rate:      $learning_rate"
-echo "batch_size:      $batch_size"
-echo "epochs:      $epochs"
-echo "CUDA_VISIBLE_DEVICES: $CUDA_VISIBLE_DEVICES"
+# append hyperparameter arguments to python call
+for i in $(seq 7 $#)
+do
+    if [ $(($i % 2)) == 0 ]; then
+        command="${command} ${!i}"
+    else
+        command="${command} --${!i}"
+    fi
+done
 
 
-# All train outputs are saved in params["model_outdir"]
-#CUDA_VISIBLE_DEVICES=6,7 python PathDSP_train_improve.py \
-#CUDA_VISIBLE_DEVICES=5
-#CUDA_VISIBLE_DEVICES=6,7
-CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES} python $SCRIPT \
-    --input_dir $input_dir \
-    --output_dir $output_dir \
-    --epochs $epochs \
-    --learning_rate $learning_rate \
-    --batch_size $batch_size
-#    --cuda_name $cuda_name
+echo "command: $command"
 
-#conda deactivate
+# run python script
+CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES} $command
+
+
 source $conda_path/bin/deactivate
 echo "Deactivated conda env $CONDA_ENV"
