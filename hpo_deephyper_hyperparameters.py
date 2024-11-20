@@ -13,6 +13,14 @@ hyperparams = [
      "default": 0.001,
      "log_uniform": True
     },
+    {
+    "name": "dropout",
+    "type": float,
+    "min": 0,
+    "max": 0.5,
+    "default": 0,
+    "log_uniform": False
+    }
 ]
 
 
