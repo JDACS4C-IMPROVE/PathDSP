@@ -108,23 +108,24 @@ params['hyperparams'] = [d['name'] for d in hyperparams]
 @profile
 def run(job, optuna_trial=None):
     model_outdir_job_id = Path(params['model_outdir'] + f"/{job.id}")
-    learning_rate = job.parameters["learning_rate"]
-    batch_size = job.parameters["batch_size"]
+    #learning_rate = job.parameters["learning_rate"]
+    #batch_size = job.parameters["batch_size"]
 
-    print(f"Launching run: batch_size={batch_size}, learning_rate={learning_rate}")
-    subprocess_res = subprocess.run(
-        [
-            "bash", 
-            "hpo_deephyper_subprocess_train.sh",
+    train_run = ["bash", "hpo_deephyper_subprocess_train.sh",
              str(params['model_environment']),
              str(params['script_name']),
              str(params['ml_data_dir']),
              str(model_outdir_job_id),
-             str(learning_rate),
-             str(batch_size),
              str(params['epochs']),
              str(os.environ["CUDA_VISIBLE_DEVICES"])
-        ], 
+        ]
+    for hp in params['hyperparams']:
+        train_run = train_run + [hp]
+        train_run = train_run + [job.parameters[hp]]
+
+    print(f"Launching run: ")
+    print(train_run)
+    subprocess_res = subprocess.run(train_run, 
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         universal_newlines=True
