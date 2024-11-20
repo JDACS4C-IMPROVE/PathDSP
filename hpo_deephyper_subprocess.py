@@ -120,8 +120,8 @@ def run(job, optuna_trial=None):
              str(os.environ["CUDA_VISIBLE_DEVICES"])
         ]
     for hp in params['hyperparams']:
-        train_run = train_run + [hp]
-        train_run = train_run + [job.parameters[hp]]
+        train_run = train_run + [str(hp)]
+        train_run = train_run + [str(job.parameters[hp])]
 
     print(f"Launching run: ")
     print(train_run)
