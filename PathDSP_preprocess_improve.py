@@ -334,7 +334,7 @@ def prep_input(params):
         comb_data_mtx_to_save = comb_data_mtx['response']
         comb_data_mtx_to_save = comb_data_mtx_to_save.reset_index()
         comb_data_mtx_to_save.rename(columns={'drug_id': 'improve_chem_id', 'sample_id': 'improve_sample_id'}, inplace=True)
-        comb_data_mtx_to_save[params["y_col_name"]] = comb_data_mtx_to_save["response"].apply(lambda x: 10 ** (x) - 0.01)
+        #comb_data_mtx_to_save[params["y_col_name"]] = comb_data_mtx_to_save["response"].apply(lambda x: 10 ** (x) - 0.01)
         rsp = drp.DrugResponseLoader(params,
                                      split_file=params[i+"_split_file"],
                                      verbose=False).dfs["response.tsv"]
