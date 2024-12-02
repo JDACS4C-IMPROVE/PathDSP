@@ -338,7 +338,7 @@ def prep_input(params):
         rsp = drp.DrugResponseLoader(params,
                                      split_file=params[i+"_split_file"],
                                      verbose=False).dfs["response.tsv"]
-        ydata = rsp.join(comb_data_mtx_to_save, on=['improve_chem_id', 'improve_sample_id'], how='right')
+        ydata = rsp.merge(comb_data_mtx_to_save, on=['improve_chem_id', 'improve_sample_id'], how='right')
         print(comb_data_mtx_to_save)
         print("YDATA")
         print(ydata)
