@@ -305,6 +305,7 @@ def prep_input(params):
     for i in ["train", "test", "val"]:
         response_df = drp.DrugResponseLoader(params, split_file=params[i+"_split_file"], verbose=True)
         response_df = response_df.dfs['response.tsv']
+        response_df['exp_id'] = list(range(0,response_df.shape[0]))
         response_df = response_df.rename(
             columns={"improve_chem_id": "drug_id", "improve_sample_id": "sample_id"}
         )
@@ -318,10 +319,11 @@ def prep_input(params):
             {
                 "drug_id": response_df["drug_id"].values,
                 "sample_id": response_df["sample_id"].values,
+                "exp_id": response_df["exp_id"].values
             }
         )
         comb_data_mtx = (
-            comb_data_mtx.set_index(["drug_id", "sample_id"])
+            comb_data_mtx.set_index(["drug_id", "sample_id", "exp_id"])
             .join(drug_data, on="drug_id")
             .join(sample_data, on="sample_id")
         )
@@ -338,7 +340,8 @@ def prep_input(params):
         rsp = drp.DrugResponseLoader(params,
                                      split_file=params[i+"_split_file"],
                                      verbose=False).dfs["response.tsv"]
-        ydata = rsp.merge(comb_data_mtx_to_save, on=['improve_chem_id', 'improve_sample_id'], how='right')
+        rsp['exp_id'] = list(range(0,rsp.shape[0]))
+        ydata = rsp.merge(comb_data_mtx_to_save, on=['exp_id'], how='right')
         print(comb_data_mtx_to_save)
         print("YDATA")
         print(ydata)

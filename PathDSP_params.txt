@@ -1,6 +1,6 @@
 [Preprocess]
 data_format = .txt
-input_supp_data_dir = /nfs/ml_lab/projects/improve/data/experiments/src/PathDSP/author_data
+input_supp_data_dir = ./author_data
 train_split_file = CCLE_split_0_train.txt
 val_split_file = CCLE_split_0_val.txt
 test_split_file = CCLE_split_0_test.txt
