@@ -389,15 +389,15 @@ def run(params):
     exp_df = exp_df.set_index(params['canc_col_name'])
     restart_path = run_DGnet(params, response_df)
     out_path = params["dgnet_file"]
-    run_random_walk(params, restart_path, out_path, multiply_expression=False)
+    run_random_walk(params, exp_df, restart_path, out_path, multiply_expression=False)
     print("run_netpea - compute MUTnet.")
     restart_path = run_MUTnet(params, mutation_data, response_df)
     out_path = params["mutnet_file"]
-    run_random_walk(params, restart_path, out_path, multiply_expression=True)
+    run_random_walk(params, exp_df, restart_path, out_path, multiply_expression=True)
     print("run_netpea - compute CNVnet.")
     restart_path = run_CNVnet(params, cnv_data, response_df)
     out_path = params["cnvnet_file"]
-    run_random_walk(params, restart_path, out_path, multiply_expression=True)
+    run_random_walk(params, exp_df, restart_path, out_path, multiply_expression=True)
 
     print("run_ssgsea - compute EXP.")
     omics_data = omics.OmicsLoader(params)
