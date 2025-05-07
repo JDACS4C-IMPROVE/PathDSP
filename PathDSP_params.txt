@@ -18,6 +18,7 @@ mutnet_file = MUTnet.txt
 cnvnet_file = CNVnet.txt
 exp_file = EXP.txt
 
+
 [Train]
 data_format = .txt
 model_file_name = model
