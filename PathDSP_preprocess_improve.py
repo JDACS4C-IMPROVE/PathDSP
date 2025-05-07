@@ -219,7 +219,7 @@ def run(params):
     for split_file in ["train_split_file", "test_split_file", "val_split_file"]:
         resp = drp.DrugResponseLoader(params, split_file=params[split_file], verbose=True)
         response_dfs = response_dfs + [resp.dfs["response.tsv"]]
-    response_df = pd.concat(response_df, ignore_index=True)
+    response_df = pd.concat(response_dfs, ignore_index=True)
     smile_df = drugs.DrugsLoader(params)
     smile_df = smile_df.dfs['drug_SMILES.tsv']
     smile_df = smile_df.reset_index()
