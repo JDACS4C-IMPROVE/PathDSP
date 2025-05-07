@@ -37,18 +37,6 @@ def mkdir(directory):
             os.mkdir(folder)
 
 
-def preprocess(params):
-    for i in [
-        "drug_bits_file",
-        "dgnet_file",
-        "mutnet_file",
-        "cnvnet_file",
-        "exp_file",
-    ]:
-        params[i] = params["output_dir"] + "/" + params[i]
-    return params
-
-
 # set timer
 def cal_time(end, start):
     """return time spent"""
@@ -64,14 +52,9 @@ def response_out(params, split_file):
     return response_df.dfs["response.tsv"]
 
 
-def smile2bits(params):
+def smile2bits(params, smile_df, response_df):
     start = datetime.now()
-    response_df = [response_out(params, params[split_file]) for split_file in ["train_split_file", "test_split_file", "val_split_file"]]
-    response_df = pd.concat(response_df, ignore_index=True)
-    smile_df = drugs.DrugsLoader(params)
-    smile_df = smile_df.dfs['drug_SMILES.tsv']
-    smile_df = smile_df.reset_index()
-    smile_df.columns = ["drug", "smile"]
+
     smile_df = smile_df.drop_duplicates(subset=["drug"], keep="first").set_index("drug")
     smile_df = smile_df.loc[smile_df.index.isin(response_df["improve_chem_id"]),]
     bit_int = params["bit_int"]
@@ -128,64 +111,60 @@ def times_expression(rwr, exp):
     return out_df
 
 
-def run_netpea(params, dtype, multiply_expression):
-    # timer
+def run_DGnet(params, multiply_expression):
+    drug_info = pd.read_csv(params["input_dir"] + "/x_data/drug_info.tsv", sep="\t")
+    drug_info["NAME"] = drug_info["NAME"].str.upper()
+    target_info = pd.read_csv(params["input_supp_data_dir"] + "/data/DB.Drug.Target.txt", sep="\t")
+    target_info = target_info.rename(columns={"drug": "NAME"})
+    combined_df = pd.merge(drug_info, target_info, how="left", on="NAME").dropna(
+        subset=["gene"]
+    )
+    combined_df = combined_df.loc[
+        combined_df["improve_chem_id"].isin(response_df["improve_chem_id"]),
+    ]
+    restart_path = params["output_dir"] + "/drug_target.txt"
+    combined_df.iloc[:, -2:].to_csv(
+        restart_path, sep="\t", header=True, index=False
+    )
+    out_path = params["dgnet_file"]
+    run_random_walk(params, restart_path, out_path, multiply_expression)
+
+def run_MUTnet(params, mutation_data, multiply_expression):
+    #mutation_data = mutation_data.reset_index()
+    mutation_data = pd.melt(mutation_data, id_vars="improve_sample_id").loc[
+        lambda x: x["value"] > 0
+    ]
+    mutation_data = mutation_data.loc[
+        mutation_data["improve_sample_id"].isin(response_df["improve_sample_id"]),
+    ]
+    restart_path = params["output_dir"] + "/mutation_data.txt"
+    mutation_data.iloc[:, 0:2].to_csv(
+        restart_path, sep="\t", header=True, index=False
+    )
+    out_path = params["mutnet_file"]
+    run_random_walk(params, restart_path, out_path, multiply_expression)
+
+def run_CNVnet(params, cnv_data, multiply_expression):
+    #cnv_data = cnv_data.reset_index()
+    cnv_data = pd.melt(cnv_data, id_vars="improve_sample_id").loc[
+        lambda x: x["value"] != 0
+    ]
+    cnv_data = cnv_data.loc[
+        cnv_data["improve_sample_id"].isin(response_df["improve_sample_id"]),
+    ]
+    restart_path = params["output_dir"] + "/cnv_data.txt"
+    cnv_data.iloc[:, 0:2].to_csv(restart_path, sep="\t", header=True, index=False)
+    out_path = params["cnvnet_file"]
+    run_random_walk(params, restart_path, out_path, multiply_expression)
+
+def run_random_walk(params, restart_path, out_path, multiply_expression):
     start_time = datetime.now()
     ppi_path = params["input_supp_data_dir"] + "/STRING/9606.protein_name.links.v11.0.pkl"
-    pathway_path = (
-        params["input_supp_data_dir"] + "/MSigdb/union.c2.cp.pid.reactome.v7.2.symbols.gmt"
-    )
+    pathway_path = (params["input_supp_data_dir"] + "/MSigdb/union.c2.cp.pid.reactome.v7.2.symbols.gmt")
     log_transform = False
     permutation_int = params["permutation_int"]
     seed_int = params["seed_int"]
     cpu_int = params["cpu_int"]
-    response_df = [response_out(params, params[split_file]) for split_file in ["train_split_file", "test_split_file", "val_split_file"]]
-    response_df = pd.concat(response_df, ignore_index=True)
-    omics_data = omics.OmicsLoader(params)
-    if dtype == "DGnet":
-        drug_info = pd.read_csv(params["input_dir"] + "/x_data/drug_info.tsv", sep="\t")
-        drug_info["NAME"] = drug_info["NAME"].str.upper()
-        target_info = pd.read_csv(
-            params["input_supp_data_dir"] + "/data/DB.Drug.Target.txt", sep="\t"
-        )
-        target_info = target_info.rename(columns={"drug": "NAME"})
-        combined_df = pd.merge(drug_info, target_info, how="left", on="NAME").dropna(
-            subset=["gene"]
-        )
-        combined_df = combined_df.loc[
-            combined_df["improve_chem_id"].isin(response_df["improve_chem_id"]),
-        ]
-        restart_path = params["output_dir"] + "/drug_target.txt"
-        combined_df.iloc[:, -2:].to_csv(
-            restart_path, sep="\t", header=True, index=False
-        )
-        outpath = params["dgnet_file"]
-    elif dtype == "MUTnet":
-        mutation_data = omics_data.dfs['cancer_mutation_count.tsv']
-        #mutation_data = mutation_data.reset_index()
-        mutation_data = pd.melt(mutation_data, id_vars="improve_sample_id").loc[
-            lambda x: x["value"] > 0
-        ]
-        mutation_data = mutation_data.loc[
-            mutation_data["improve_sample_id"].isin(response_df["improve_sample_id"]),
-        ]
-        restart_path = params["output_dir"] + "/mutation_data.txt"
-        mutation_data.iloc[:, 0:2].to_csv(
-            restart_path, sep="\t", header=True, index=False
-        )
-        outpath = params["mutnet_file"]
-    else:
-        cnv_data = omics_data.dfs['cancer_discretized_copy_number.tsv']
-        #cnv_data = cnv_data.reset_index()
-        cnv_data = pd.melt(cnv_data, id_vars="improve_sample_id").loc[
-            lambda x: x["value"] != 0
-        ]
-        cnv_data = cnv_data.loc[
-            cnv_data["improve_sample_id"].isin(response_df["improve_sample_id"]),
-        ]
-        restart_path = params["output_dir"] + "/cnv_data.txt"
-        cnv_data.iloc[:, 0:2].to_csv(restart_path, sep="\t", header=True, index=False)
-        outpath = params["cnvnet_file"]
     # perform Random Walk
     print(datetime.now(), "performing random walk with restart")
     rwr_df = rwr.RWR(
@@ -222,35 +201,23 @@ def run_netpea(params, dtype, multiply_expression):
         permutation=permutation_int,
         seed=seed_int,
         n_cpu=cpu_int,
-        out_path=outpath,
-    )
+        out_path=out_path,)
     print("[Finished in {:}]".format(cal_time(datetime.now(), start_time)))
 
 
-def prep_input(params):
+def prep_input(params, response_df):
     # Read data files
     drug_mbit_df = pd.read_csv(params["drug_bits_file"], sep="\t", index_col=0)
     drug_mbit_df = drug_mbit_df.reset_index().rename(columns={"drug": "drug_id"})
     DGnet = pd.read_csv(params["dgnet_file"], sep="\t", index_col=0)
-    DGnet = (
-        DGnet.add_suffix("_dgnet").reset_index().rename(columns={"index": "drug_id"})
-    )
+    DGnet = (DGnet.add_suffix("_dgnet").reset_index().rename(columns={"index": "drug_id"}))
     CNVnet = pd.read_csv(params["cnvnet_file"], sep="\t", index_col=0)
-    CNVnet = (
-        CNVnet.add_suffix("_cnvnet")
-        .reset_index()
-        .rename(columns={"index": "sample_id"})
-    )
+    CNVnet = (CNVnet.add_suffix("_cnvnet").reset_index().rename(columns={"index": "sample_id"}))
     MUTnet = pd.read_csv(params["mutnet_file"], sep="\t", index_col=0)
-    MUTnet = (
-        MUTnet.add_suffix("_mutnet")
-        .reset_index()
-        .rename(columns={"index": "sample_id"})
-    )
+    MUTnet = (MUTnet.add_suffix("_mutnet").reset_index().rename(columns={"index": "sample_id"}))
     EXP = pd.read_csv(params["exp_file"], sep="\t", index_col=0)
     EXP = EXP.add_suffix("_exp").reset_index().rename(columns={"index": "sample_id"})
-    response_df = [response_out(params, params[split_file]) for split_file in ["train_split_file", "test_split_file", "val_split_file"]]
-    response_df = pd.concat(response_df, ignore_index=True)
+    # fix this, should be params
     response_df = response_df.rename(
         columns={"improve_chem_id": "drug_id", "improve_sample_id": "sample_id"}
     )
@@ -352,7 +319,7 @@ def prep_input(params):
         )
 
 
-def run_ssgsea(params):
+def run_ssgsea(params, expMat, response_df):
     # expMat = improve_utils.load_gene_expression_data(sep='\t')
     # expMat = drp.load_omics_data(
     #     params,
@@ -360,15 +327,12 @@ def run_ssgsea(params):
     #     canc_col_name="improve_sample_id",
     #     gene_system_identifier="Gene_Symbol",
     # )
-    omics_data = omics.OmicsLoader(params)
-    expMat = omics_data.dfs['cancer_gene_expression.tsv']
-    expMat = expMat.set_index(params['canc_col_name'])
+
 
     # response_df = improve_utils.load_single_drug_response_data(source=params['data_type'],
     #                                                     split=params['split'], split_type=["train", "test", "val"],
     #                                                     y_col_name=params['metric'])
-    response_df = [response_out(params, params[split_file]) for split_file in ["train_split_file", "test_split_file", "val_split_file"]]
-    response_df = pd.concat(response_df, ignore_index=True)
+
     expMat = expMat.loc[expMat.index.isin(response_df["improve_sample_id"]),]
     gct = expMat.T  # gene (rows) cell lines (columns)
     pathway_path = (
@@ -410,19 +374,46 @@ def run_ssgsea(params):
     df.T.to_csv(params["exp_file"], header=True, index=True, sep="\t")
 
 def run(params):
-    frm.create_outdir(outdir=params["output_dir"])
-    params = preprocess(params)
-    print("convert drug to bits.")
-    smile2bits(params)
-    print("compute DGnet.")
-    run_netpea(params, dtype="DGnet", multiply_expression=False)
-    print("compute MUTnet.")
-    run_netpea(params, dtype="MUTnet", multiply_expression=True)
-    print("compute CNVnet.")
-    run_netpea(params, dtype="CNVnet", multiply_expression=True)
-    print("compute EXP.")
-    run_ssgsea(params)
+    for i in [
+    "drug_bits_file",
+    "dgnet_file",
+    "mutnet_file",
+    "cnvnet_file",
+    "exp_file",]:
+        params[i] = params["output_dir"] + "/" + params[i]
+
+    print("smile2bits - convert drug to bits.")
+    response_df = [response_out(params, params[split_file]) for split_file in ["train_split_file", "test_split_file", "val_split_file"]]
+    response_df = pd.concat(response_df, ignore_index=True)
+    smile_df = drugs.DrugsLoader(params)
+    smile_df = smile_df.dfs['drug_SMILES.tsv']
+    smile_df = smile_df.reset_index()
+    smile_df.columns = ["drug", "smile"]
+    smile2bits(params, smile_df, response_df)
+
+    print("run_netpea - compute DGnet.")
+    response_df = [response_out(params, params[split_file]) for split_file in ["train_split_file", "test_split_file", "val_split_file"]]
+    response_df = pd.concat(response_df, ignore_index=True)
+    omics_data = omics.OmicsLoader(params)
+    mutation_data = omics_data.dfs['cancer_mutation_count.tsv']
+    cnv_data = omics_data.dfs['cancer_discretized_copy_number.tsv']
+    run_DGnet(params, multiply_expression=False)
+    print("run_netpea - compute MUTnet.")
+    run_MUTnet(params, mutation_data, multiply_expression=True)
+    print("run_netpea - compute CNVnet.")
+    run_CNVnet(params, cnv_data, multiply_expression=True)
+
+    print("run_ssgsea - compute EXP.")
+    omics_data = omics.OmicsLoader(params)
+    expMat = omics_data.dfs['cancer_gene_expression.tsv']
+    expMat = expMat.set_index(params['canc_col_name'])
+    response_df = [response_out(params, params[split_file]) for split_file in ["train_split_file", "test_split_file", "val_split_file"]]
+    response_df = pd.concat(response_df, ignore_index=True)
+    run_ssgsea(params, expMat, response_df)
+
     print("prepare final input file.")
+    response_df = [response_out(params, params[split_file]) for split_file in ["train_split_file", "test_split_file", "val_split_file"]]
+    response_df = pd.concat(response_df, ignore_index=True)
     prep_input(params)
 
 
