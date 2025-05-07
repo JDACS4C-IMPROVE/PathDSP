@@ -111,7 +111,7 @@ def times_expression(rwr, exp):
     return out_df
 
 
-def run_DGnet(params, multiply_expression):
+def run_DGnet(params, response_df):
     drug_info = pd.read_csv(params["input_dir"] + "/x_data/drug_info.tsv", sep="\t")
     drug_info["NAME"] = drug_info["NAME"].str.upper()
     target_info = pd.read_csv(params["input_supp_data_dir"] + "/data/DB.Drug.Target.txt", sep="\t")
@@ -126,38 +126,27 @@ def run_DGnet(params, multiply_expression):
     combined_df.iloc[:, -2:].to_csv(
         restart_path, sep="\t", header=True, index=False
     )
-    out_path = params["dgnet_file"]
-    run_random_walk(params, restart_path, out_path, multiply_expression)
+    return restart_path
 
-def run_MUTnet(params, mutation_data, multiply_expression):
+def run_MUTnet(params, mutation_data, response_df):
     #mutation_data = mutation_data.reset_index()
-    mutation_data = pd.melt(mutation_data, id_vars="improve_sample_id").loc[
-        lambda x: x["value"] > 0
-    ]
-    mutation_data = mutation_data.loc[
-        mutation_data["improve_sample_id"].isin(response_df["improve_sample_id"]),
-    ]
+    mutation_data = pd.melt(mutation_data, id_vars="improve_sample_id").loc[lambda x: x["value"] > 0]
+    mutation_data = mutation_data.loc[mutation_data["improve_sample_id"].isin(response_df["improve_sample_id"]),]
     restart_path = params["output_dir"] + "/mutation_data.txt"
     mutation_data.iloc[:, 0:2].to_csv(
         restart_path, sep="\t", header=True, index=False
     )
-    out_path = params["mutnet_file"]
-    run_random_walk(params, restart_path, out_path, multiply_expression)
+    return restart_path
 
-def run_CNVnet(params, cnv_data, multiply_expression):
+def run_CNVnet(params, cnv_data, response_df):
     #cnv_data = cnv_data.reset_index()
-    cnv_data = pd.melt(cnv_data, id_vars="improve_sample_id").loc[
-        lambda x: x["value"] != 0
-    ]
-    cnv_data = cnv_data.loc[
-        cnv_data["improve_sample_id"].isin(response_df["improve_sample_id"]),
-    ]
+    cnv_data = pd.melt(cnv_data, id_vars="improve_sample_id").loc[lambda x: x["value"] != 0]
+    cnv_data = cnv_data.loc[cnv_data["improve_sample_id"].isin(response_df["improve_sample_id"]),]
     restart_path = params["output_dir"] + "/cnv_data.txt"
     cnv_data.iloc[:, 0:2].to_csv(restart_path, sep="\t", header=True, index=False)
-    out_path = params["cnvnet_file"]
-    run_random_walk(params, restart_path, out_path, multiply_expression)
+    return restart_path
 
-def run_random_walk(params, restart_path, out_path, multiply_expression):
+def run_random_walk(params, exp_df, restart_path, out_path, multiply_expression):
     start_time = datetime.now()
     ppi_path = params["input_supp_data_dir"] + "/STRING/9606.protein_name.links.v11.0.pkl"
     pathway_path = (params["input_supp_data_dir"] + "/MSigdb/union.c2.cp.pid.reactome.v7.2.symbols.gmt")
@@ -188,8 +177,7 @@ def run_random_walk(params, restart_path, out_path, multiply_expression):
         #     canc_col_name="improve_sample_id",
         #     gene_system_identifier="Gene_Symbol",
         # )
-        exp_df = omics_data.dfs['cancer_gene_expression.tsv']
-        exp_df = exp_df.set_index(params['canc_col_name'])
+
         rwr_df = times_expression(rwr_df, exp_df)
     # rwr_df.to_csv(out_path+'.RWR.txt', header=True, index=True, sep='\t')
     # perform Pathwa Enrichment Analysis
@@ -397,11 +385,19 @@ def run(params):
     omics_data = omics.OmicsLoader(params)
     mutation_data = omics_data.dfs['cancer_mutation_count.tsv']
     cnv_data = omics_data.dfs['cancer_discretized_copy_number.tsv']
-    run_DGnet(params, multiply_expression=False)
+    exp_df = omics_data.dfs['cancer_gene_expression.tsv']
+    exp_df = exp_df.set_index(params['canc_col_name'])
+    restart_path = run_DGnet(params, response_df)
+    out_path = params["dgnet_file"]
+    run_random_walk(params, restart_path, out_path, multiply_expression=False)
     print("run_netpea - compute MUTnet.")
-    run_MUTnet(params, mutation_data, multiply_expression=True)
+    restart_path = run_MUTnet(params, mutation_data, response_df)
+    out_path = params["mutnet_file"]
+    run_random_walk(params, restart_path, out_path, multiply_expression=True)
     print("run_netpea - compute CNVnet.")
-    run_CNVnet(params, cnv_data, multiply_expression=True)
+    restart_path = run_CNVnet(params, cnv_data, response_df)
+    out_path = params["cnvnet_file"]
+    run_random_walk(params, restart_path, out_path, multiply_expression=True)
 
     print("run_ssgsea - compute EXP.")
     omics_data = omics.OmicsLoader(params)
