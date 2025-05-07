@@ -410,7 +410,7 @@ def run(params):
     print("prepare final input file.")
     response_df = [response_out(params, params[split_file]) for split_file in ["train_split_file", "test_split_file", "val_split_file"]]
     response_df = pd.concat(response_df, ignore_index=True)
-    prep_input(params)
+    prep_input(params, response_df)
 
 
 def main(args):
