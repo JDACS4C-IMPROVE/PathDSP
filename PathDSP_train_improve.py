@@ -14,7 +14,7 @@ import polars as pl
 from improvelib.applications.drug_response_prediction.config import DRPTrainConfig #NCK
 import improvelib.utils as frm #NCK
 
-from PathDSP_preprocess_improve import cal_time, preprocess
+from PathDSP_preprocess_improve import cal_time
 from model_params_def import pathdsp_train_params
 
 file_path = os.path.dirname(os.path.realpath(__file__))
