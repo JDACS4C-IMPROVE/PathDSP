@@ -152,10 +152,9 @@ def run_ssgsea(params, expMat, response_df):
 
 
 def prep_input(params, response_df):
-    # Read data files
+    # Read data files and rename ID columns
     drug_mbit_df = pd.read_csv(params["drug_bits_file"], sep="\t", index_col=0)
-    #drug_mbit_df = drug_mbit_df.reset_index().rename(columns={"drug": "drug_id"})
-    drug_mbit_df = drug_mbit_df.reset_index()
+    drug_mbit_df = drug_mbit_df.reset_index().rename(columns={"drug": params['drug_col_name']})
     DGnet = pd.read_csv(params["dgnet_file"], sep="\t", index_col=0)
     DGnet = DGnet.add_suffix("_dgnet").reset_index().rename(columns={"index": params['drug_col_name']})
     CNVnet = pd.read_csv(params["cnvnet_file"], sep="\t", index_col=0)
@@ -164,20 +163,20 @@ def prep_input(params, response_df):
     MUTnet = MUTnet.add_suffix("_mutnet").reset_index().rename(columns={"index": params['canc_col_name']})
     EXP = pd.read_csv(params["exp_file"], sep="\t", index_col=0)
     EXP = EXP.add_suffix("_exp").reset_index().rename(columns={"index": params['canc_col_name']})
-    # fix this, should be params
-    #response_df = response_df.rename(columns={"improve_chem_id": "drug_id", "improve_sample_id": "sample_id"})
-    # Extract relevant IDs
+    # Extract common IDs
     common_drug_ids = reduce(np.intersect1d, (drug_mbit_df[params['drug_col_name']], DGnet[params['drug_col_name']], response_df[params['drug_col_name']]))
     common_sample_ids = reduce(np.intersect1d, (CNVnet[params['canc_col_name']],
                                                 MUTnet[params['canc_col_name']],
                                                 EXP[params['canc_col_name']],
                                                 response_df[params['canc_col_name']]))
+    # Subset to common IDs
     response_df = response_df.loc[(response_df[params['drug_col_name']].isin(common_drug_ids)) & (response_df[params['canc_col_name']].isin(common_sample_ids)), :]
     drug_mbit_df = drug_mbit_df.loc[drug_mbit_df[params['drug_col_name']].isin(common_drug_ids), :].set_index(params['drug_col_name']).sort_index()
     DGnet = DGnet.loc[DGnet[params['drug_col_name']].isin(common_drug_ids), :].set_index(params['drug_col_name']).sort_index()
     CNVnet = CNVnet.loc[CNVnet[params['canc_col_name']].isin(common_sample_ids), :].set_index(params['canc_col_name']).sort_index()
     MUTnet = MUTnet.loc[MUTnet[params['canc_col_name']].isin(common_sample_ids), :].set_index(params['canc_col_name']).sort_index()
     EXP = EXP.loc[EXP[params['canc_col_name']].isin(common_sample_ids), :].set_index(params['canc_col_name']).sort_index()
+    # Join drug and sample data
     drug_data = drug_mbit_df.join(DGnet)
     sample_data = CNVnet.join([MUTnet, EXP])
     ## export train,val,test set
