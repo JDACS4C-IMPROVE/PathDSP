@@ -221,7 +221,7 @@ def run(params):
     smile_df = smile_df.dfs['drug_SMILES.tsv']
     smile_df = smile_df.reset_index()
     smile_df.columns = [params['drug_col_name'], "smile"]
-    smile_df = smile_df.drop_duplicates(subset=["drug"], keep="first").set_index("drug")
+    smile_df = smile_df.drop_duplicates(subset=[params['drug_col_name']], keep="first").set_index(params['drug_col_name'])
 
     smile_df = smile_df.loc[smile_df.index.isin(response_df["improve_chem_id"]),]
     omics_data = omics.OmicsLoader(params)
