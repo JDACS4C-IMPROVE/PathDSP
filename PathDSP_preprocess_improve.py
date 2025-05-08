@@ -184,7 +184,8 @@ def run_ssgsea(params, expMat, response_df):
     gct = expMat.T  # gene (rows) cell lines (columns)
     pathway_path = (params["input_supp_data_dir"] + "/MSigdb/union.c2.cp.pid.reactome.v7.2.symbols.gmt")
     #tmp_str = params["output_dir"] + "/tmpdir_ssgsea/"
-    os.mkdirs(params["output_dir"] + "/tmpdir_ssgsea/", exist_ok=True)
+    if not os.path.isdir(params["output_dir"] + "/tmpdir_ssgsea/"):
+        os.mkdir(params["output_dir"] + "/tmpdir_ssgsea/")
 
     # run enrichment
     ssgsea = gp.ssgsea(data=gct,  # gct: a matrix of gene by sample
