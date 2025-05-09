@@ -189,14 +189,15 @@ def prep_input(params, response_df):
         #fix this
         comb_data_mtx = pd.DataFrame({params['drug_col_name']: response_df[params['drug_col_name']].values,
                                       params['canc_col_name']: response_df[params['canc_col_name']].values,
-                                      "exp_id": response_df["exp_id"].values})
-        comb_data_mtx = (comb_data_mtx.set_index([params['drug_col_name'], params['canc_col_name'], "exp_id"]).join(drug_data, on=params['drug_col_name']).join(sample_data, on=params['canc_col_name']))
+                                      "exp_id": response_df["exp_id"].values, 
+                                      params['y_col_name']: params['y_col_name'].values})
+        comb_data_mtx = (comb_data_mtx.set_index([params['drug_col_name'], params['canc_col_name'], "exp_id", params['y_col_name']]).join(drug_data, on=params['drug_col_name']).join(sample_data, on=params['canc_col_name']))
         ss = StandardScaler()
         comb_data_mtx.iloc[:,params["bit_int"]:comb_data_mtx.shape[1]] = ss.fit_transform(comb_data_mtx.iloc[:,params["bit_int"]:comb_data_mtx.shape[1]])
         ## add 0.01 to avoid possible inf values
         comb_data_mtx["response"] = np.log10(response_df[params['y_col_name']].values + 0.01)
         comb_data_mtx = comb_data_mtx.dropna()
-        ydata = comb_data_mtx[['response', params['y_col_name']]].reset_index()
+        ydata = comb_data_mtx['response'].reset_index()
         #rsp = drp.DrugResponseLoader(params,
         #                             split_file=params[i+"_split_file"],
         #                             verbose=False).dfs["response.tsv"]
