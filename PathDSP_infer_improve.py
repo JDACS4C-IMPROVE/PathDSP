@@ -10,7 +10,7 @@ import model_utils.myModel as mynet
 import model_utils.myDataloader as mydl
 import model_utils.myUtility as myutil
 
-from PathDSP_preprocess_improve import mkdir, preprocess
+
 from PathDSP_train_improve import (
     predicting,
     cal_time,
