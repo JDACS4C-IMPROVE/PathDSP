@@ -174,7 +174,7 @@ def run(params):
 
     print("Convert drug to bits...")
     bad_smiles, good_smiles = check_smiles_RDKit(smile_df, params['drug_col_name'])
-    drug_mbit_df = smile2bits(params, good_smiles, response_df)
+    drug_mbit_df = smile2bits(params, good_smiles)
     print("...finished drug to bits.")
 
     print("Compute DGnet...")
