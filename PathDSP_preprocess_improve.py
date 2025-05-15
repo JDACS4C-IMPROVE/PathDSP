@@ -27,40 +27,38 @@ file_path = Path(__file__).resolve().parent
 
 req_preprocess_args = [ll["name"] for ll in pathdsp_preprocess_params]
 
-# set timer
-def cal_time(end, start):
-    """return time spent"""
-    # end = datetime.now(), start = datetime.now()
-    datetimeFormat = "%Y-%m-%d %H:%M:%S.%f"
-    spend = datetime.strptime(str(end), datetimeFormat) - datetime.strptime(
-        str(start), datetimeFormat
-    )
-    return spend
+
+def check_smiles_RDKit(smile_df, col_name):
+    bad_smiles = {}
+    good_smiles = {}
+    for idx, row in smile_df.iterrows():
+        mol = Chem.MolFromSmiles(row["smile"])
+        if mol is None:
+            bad_smiles[idx] = row['smile']
+        else:
+            good_smiles[idx] = row['smile']
+    bad_smiles = pd.DataFrame.from_dict(bad_smiles, orient='index', columns=col_name)
+    good_smiles = pd.DataFrame.from_dict(good_smiles, orient='index', columns=col_name)
+    print("bad smiles:", bad_smiles)
+    print("good smiles:", good_smiles)
+    return bad_smiles, good_smiles
 
 
-
-def smile2bits(params, smile_df, response_df):
-    start = datetime.now()
+def smile2bits(params, smile_df):
     record_list = []
     # smile2bits drug by drug
     n_drug = 1
     for idx, row in smile_df.iterrows():
         mol = Chem.MolFromSmiles(row["smile"])
-        if mol is None:
-            continue
         mbit = list(AllChem.GetMorganFingerprintAsBitVect(mol, radius=3, nBits=params['bit_int']))
-        # append to result
         record_list.append(tuple([idx] + mbit))
-        if len(mbit) == params['bit_int']:
-            n_drug += 1
-    print("total {:} drugs with bits".format(n_drug))
     # convert dict to dataframe
-    colname_list = ["drug"] + ["mBit_" + str(i) for i in range(params['bit_int'])]
+    colname_list = [params['drug_col_name']] + ["mBit_" + str(i) for i in range(params['bit_int'])]
     drug_mbit_df = pd.DataFrame.from_records(record_list, columns=colname_list)
-    print("unique drugs={:}".format(len(drug_mbit_df["drug"].unique())))
     # save to file
-    drug_mbit_df.to_csv(params["drug_bits_file"], header=True, index=False, sep="\t")
-    print("[Finished in {:}]".format(cal_time(datetime.now(), start)))
+    #drug_mbit_df.to_csv(params["drug_bits_file"], header=True, index=False, sep="\t")
+    return drug_mbit_df
+
 
 
 def times_expression(rwr, exp):
@@ -91,7 +89,6 @@ def times_expression(rwr, exp):
 
 
 def run_random_walk(params, exp_df, restart_path, out_path, multiply_expression):
-    start_time = datetime.now()
     ppi_path = params["input_supp_data_dir"] + "/STRING/9606.protein_name.links.v11.0.pkl"
     pathway_path = (params["input_supp_data_dir"] + "/MSigdb/union.c2.cp.pid.reactome.v7.2.symbols.gmt")
     # Perform random walk with restart
@@ -114,7 +111,7 @@ def run_random_walk(params, exp_df, restart_path, out_path, multiply_expression)
         seed=params['seed_int'],
         n_cpu=params['cpu_int'],
         out_path=out_path,)
-    print("[Finished in {:}]".format(cal_time(datetime.now(), start_time)))
+    return cell_pathway_df
 
 def run_ssgsea(params, expMat, response_df):
     expMat = expMat.loc[expMat.index.isin(response_df[params['canc_col_name']]),]
@@ -148,64 +145,8 @@ def run_ssgsea(params, expMat, response_df):
         if i > 0:
             total_dict[cell_lines[i]][pathway] = float(vals[i])
     df = pd.DataFrame(total_dict)
-    df.T.to_csv(params["exp_file"], header=True, index=True, sep="\t")
-
-
-def prep_input(params, response_df):
-    # Read data files and rename ID columns
-    drug_mbit_df = pd.read_csv(params["drug_bits_file"], sep="\t", index_col=0)
-    drug_mbit_df = drug_mbit_df.reset_index().rename(columns={"drug": params['drug_col_name']})
-    DGnet = pd.read_csv(params["dgnet_file"], sep="\t", index_col=0)
-    DGnet = DGnet.add_suffix("_dgnet").reset_index().rename(columns={"index": params['drug_col_name']})
-    CNVnet = pd.read_csv(params["cnvnet_file"], sep="\t", index_col=0)
-    CNVnet = CNVnet.add_suffix("_cnvnet").reset_index().rename(columns={"index": params['canc_col_name']})
-    MUTnet = pd.read_csv(params["mutnet_file"], sep="\t", index_col=0)
-    MUTnet = MUTnet.add_suffix("_mutnet").reset_index().rename(columns={"index": params['canc_col_name']})
-    EXP = pd.read_csv(params["exp_file"], sep="\t", index_col=0)
-    EXP = EXP.add_suffix("_exp").reset_index().rename(columns={"index": params['canc_col_name']})
-    # Extract common IDs
-    common_drug_ids = reduce(np.intersect1d, (drug_mbit_df[params['drug_col_name']], DGnet[params['drug_col_name']], response_df[params['drug_col_name']]))
-    common_sample_ids = reduce(np.intersect1d, (CNVnet[params['canc_col_name']],
-                                                MUTnet[params['canc_col_name']],
-                                                EXP[params['canc_col_name']],
-                                                response_df[params['canc_col_name']]))
-    # Subset to common IDs
-    response_df = response_df.loc[(response_df[params['drug_col_name']].isin(common_drug_ids)) & (response_df[params['canc_col_name']].isin(common_sample_ids)), :]
-    drug_mbit_df = drug_mbit_df.loc[drug_mbit_df[params['drug_col_name']].isin(common_drug_ids), :].set_index(params['drug_col_name']).sort_index()
-    DGnet = DGnet.loc[DGnet[params['drug_col_name']].isin(common_drug_ids), :].set_index(params['drug_col_name']).sort_index()
-    CNVnet = CNVnet.loc[CNVnet[params['canc_col_name']].isin(common_sample_ids), :].set_index(params['canc_col_name']).sort_index()
-    MUTnet = MUTnet.loc[MUTnet[params['canc_col_name']].isin(common_sample_ids), :].set_index(params['canc_col_name']).sort_index()
-    EXP = EXP.loc[EXP[params['canc_col_name']].isin(common_sample_ids), :].set_index(params['canc_col_name']).sort_index()
-    # Join drug and sample data
-    drug_data = drug_mbit_df.join(DGnet)
-    sample_data = CNVnet.join([MUTnet, EXP])
-    ## export train,val,test set
-    for i in ["train", "test", "val"]:
-        response_df = drp.DrugResponseLoader(params, split_file=params[i+"_split_file"], verbose=True)
-        response_df = response_df.dfs['response.tsv']
-        response_df['exp_id'] = list(range(0,response_df.shape[0]))
-        #response_df = response_df.rename(columns={params['drug_col_name']: "drug_id", params['canc_col_name']: "sample_id"})
-        response_df = response_df.loc[(response_df[params['drug_col_name']].isin(common_drug_ids)) & (response_df[params['canc_col_name']].isin(common_sample_ids)),:]
-        #fix this
-        #comb_data_mtx = pd.DataFrame({params['drug_col_name']: response_df[params['drug_col_name']].values,
-        #                              params['canc_col_name']: response_df[params['canc_col_name']].values,
-        #                              "exp_id": response_df["exp_id"].values, 
-        #                              params['y_col_name']: response_df[params['y_col_name']].values})
-        comb_data_mtx = response_df[[params['drug_col_name'], params['canc_col_name'], 'exp_id', params['y_col_name']]]
-        comb_data_mtx = (comb_data_mtx.set_index([params['drug_col_name'], params['canc_col_name'], "exp_id", params['y_col_name']]).join(drug_data, on=params['drug_col_name']).join(sample_data, on=params['canc_col_name']))
-        ss = StandardScaler()
-        comb_data_mtx.iloc[:,params["bit_int"]:comb_data_mtx.shape[1]] = ss.fit_transform(comb_data_mtx.iloc[:,params["bit_int"]:comb_data_mtx.shape[1]])
-        ## add 0.01 to avoid possible inf values
-        comb_data_mtx["response"] = np.log10(response_df[params['y_col_name']].values + 0.01)
-        comb_data_mtx = comb_data_mtx.dropna()
-        ydata = comb_data_mtx['response'].reset_index()
-        #rsp = drp.DrugResponseLoader(params,
-        #                             split_file=params[i+"_split_file"],
-        #                             verbose=False).dfs["response.tsv"]
-        #rsp['exp_id'] = list(range(0,rsp.shape[0]))
-        #ydata = rsp.merge(comb_data_mtx_to_save, on=['exp_id'], how='right')
-        frm.save_stage_ydf(ydf=ydata, stage=i, output_dir=params["output_dir"])
-        pl.from_pandas(comb_data_mtx).write_csv(params["output_dir"] + "/" + frm.build_ml_data_file_name(data_format=params["data_format"], stage=i), separator="\t", has_header=True)
+    #df.T.to_csv(params["exp_file"], header=True, index=True, sep="\t")
+    return df.T
 
 
 
@@ -232,7 +173,8 @@ def run(params):
     exp_df = exp_df.set_index(params['canc_col_name'])
 
     print("Convert drug to bits...")
-    smile2bits(params, smile_df, response_df)
+    bad_smiles, good_smiles = check_smiles_RDKit(smile_df, params['drug_col_name'])
+    drug_mbit_df = smile2bits(params, good_smiles, response_df)
     print("...finished drug to bits.")
 
     print("Compute DGnet...")
@@ -243,7 +185,7 @@ def run(params):
     combined_df = pd.merge(drug_info, target_info, how="left", on="NAME").dropna(subset=["gene"])
     combined_df = combined_df.loc[combined_df[params['drug_col_name']].isin(response_df[params['drug_col_name']]),]
     combined_df.iloc[:, -2:].to_csv(params["output_dir"] + "/drug_target.txt", sep="\t", header=True, index=False)
-    run_random_walk(params, exp_df, restart_path=params["output_dir"] + "/drug_target.txt", out_path=params["dgnet_file"], multiply_expression=False)
+    DGnet = run_random_walk(params, exp_df, restart_path=params["output_dir"] + "/drug_target.txt", out_path=params["dgnet_file"], multiply_expression=False)
     print("...finished DGnet.")
 
     print("Compute MUTnet...")
@@ -251,7 +193,7 @@ def run(params):
     mutation_data = pd.melt(mutation_data, id_vars=params['canc_col_name']).loc[lambda x: x["value"] > 0]
     mutation_data = mutation_data.loc[mutation_data[params['canc_col_name']].isin(response_df[params['canc_col_name']]),]
     mutation_data.iloc[:, 0:2].to_csv(params["output_dir"] + "/mutation_data.txt", sep="\t", header=True, index=False)
-    run_random_walk(params, exp_df, restart_path=params["output_dir"] + "/mutation_data.txt", out_path=params["mutnet_file"], multiply_expression=True)
+    MUTnet = run_random_walk(params, exp_df, restart_path=params["output_dir"] + "/mutation_data.txt", out_path=params["mutnet_file"], multiply_expression=True)
     print("...finished MUTnet.")    
     
     print("Compute CNVnet...")
@@ -260,17 +202,59 @@ def run(params):
     cnv_data = cnv_data.loc[cnv_data[params['canc_col_name']].isin(response_df[params['canc_col_name']]),]
     restart_path = params["output_dir"] + "/cnv_data.txt"
     cnv_data.iloc[:, 0:2].to_csv(params["output_dir"] + "/cnv_data.txt", sep="\t", header=True, index=False)
-    run_random_walk(params, exp_df, restart_path=params["output_dir"] + "/cnv_data.txt", out_path=params["cnvnet_file"], multiply_expression=True)
+    CNVnet = run_random_walk(params, exp_df, restart_path=params["output_dir"] + "/cnv_data.txt", out_path=params["cnvnet_file"], multiply_expression=True)
     print("...finished CNVnet.") 
 
     print("run_ssgsea - compute EXP.")
     omics_data = omics.OmicsLoader(params)
     expMat = omics_data.dfs['cancer_gene_expression.tsv']
     expMat = expMat.set_index(params['canc_col_name'])
-    run_ssgsea(params, expMat, response_df)
+    EXP = run_ssgsea(params, expMat, response_df)
 
     print("prepare final input file.")
-    prep_input(params, response_df)
+    # Read data files and rename ID columns
+    #drug_mbit_df = pd.read_csv(params["drug_bits_file"], sep="\t", index_col=0)
+    #drug_mbit_df = drug_mbit_df.reset_index()
+    #DGnet = pd.read_csv(params["dgnet_file"], sep="\t", index_col=0)
+    DGnet = DGnet.add_suffix("_dgnet").reset_index().rename(columns={"index": params['drug_col_name']})
+    #CNVnet = pd.read_csv(params["cnvnet_file"], sep="\t", index_col=0)
+    CNVnet = CNVnet.add_suffix("_cnvnet").reset_index().rename(columns={"index": params['canc_col_name']})
+    #MUTnet = pd.read_csv(params["mutnet_file"], sep="\t", index_col=0)
+    MUTnet = MUTnet.add_suffix("_mutnet").reset_index().rename(columns={"index": params['canc_col_name']})
+    #EXP = pd.read_csv(params["exp_file"], sep="\t", index_col=0)
+    EXP = EXP.add_suffix("_exp").reset_index().rename(columns={"index": params['canc_col_name']})
+    # Extract common IDs
+    common_drug_ids = reduce(np.intersect1d, (drug_mbit_df[params['drug_col_name']], DGnet[params['drug_col_name']], response_df[params['drug_col_name']]))
+    common_sample_ids = reduce(np.intersect1d, (CNVnet[params['canc_col_name']],
+                                                MUTnet[params['canc_col_name']],
+                                                EXP[params['canc_col_name']],
+                                                response_df[params['canc_col_name']]))
+    # Subset to common IDs
+    response_df = response_df.loc[(response_df[params['drug_col_name']].isin(common_drug_ids)) & (response_df[params['canc_col_name']].isin(common_sample_ids)), :]
+    drug_mbit_df = drug_mbit_df.loc[drug_mbit_df[params['drug_col_name']].isin(common_drug_ids), :].set_index(params['drug_col_name']).sort_index()
+    DGnet = DGnet.loc[DGnet[params['drug_col_name']].isin(common_drug_ids), :].set_index(params['drug_col_name']).sort_index()
+    CNVnet = CNVnet.loc[CNVnet[params['canc_col_name']].isin(common_sample_ids), :].set_index(params['canc_col_name']).sort_index()
+    MUTnet = MUTnet.loc[MUTnet[params['canc_col_name']].isin(common_sample_ids), :].set_index(params['canc_col_name']).sort_index()
+    EXP = EXP.loc[EXP[params['canc_col_name']].isin(common_sample_ids), :].set_index(params['canc_col_name']).sort_index()
+    # Join drug and sample data
+    drug_data = drug_mbit_df.join(DGnet)
+    sample_data = CNVnet.join([MUTnet, EXP])
+    ## export train,val,test set
+    for i in ["train", "test", "val"]:
+        response_df = drp.DrugResponseLoader(params, split_file=params[i+"_split_file"], verbose=True)
+        response_df = response_df.dfs['response.tsv']
+        response_df = response_df.loc[(response_df[params['drug_col_name']].isin(common_drug_ids)) & (response_df[params['canc_col_name']].isin(common_sample_ids)),:]
+        comb_data_mtx = response_df[[params['drug_col_name'], params['canc_col_name'], 'exp_id', params['y_col_name']]]
+        comb_data_mtx = (comb_data_mtx.set_index([params['drug_col_name'], params['canc_col_name'], "exp_id", params['y_col_name']]).join(drug_data, on=params['drug_col_name']).join(sample_data, on=params['canc_col_name']))
+        ss = StandardScaler()
+        comb_data_mtx.iloc[:,params["bit_int"]:comb_data_mtx.shape[1]] = ss.fit_transform(comb_data_mtx.iloc[:,params["bit_int"]:comb_data_mtx.shape[1]])
+        ## add 0.01 to avoid possible inf values
+        comb_data_mtx["response"] = np.log10(response_df[params['y_col_name']].values + 0.01)
+        comb_data_mtx = comb_data_mtx.dropna()
+        ydata = comb_data_mtx['response'].reset_index()
+        frm.save_stage_ydf(ydf=ydata, stage=i, output_dir=params["output_dir"])
+        pl.from_pandas(comb_data_mtx).write_csv(params["output_dir"] + "/" + frm.build_ml_data_file_name(data_format=params["data_format"], stage=i), separator="\t", has_header=True)
+
 
 
 def main(args):
@@ -283,6 +267,5 @@ def main(args):
 
 
 if __name__ == "__main__":
-    start = datetime.now()
     main(sys.argv[1:])
-    print("[Preprocessing finished in {:}]".format(cal_time(datetime.now(), start)))
+

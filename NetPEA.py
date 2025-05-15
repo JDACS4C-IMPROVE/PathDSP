@@ -74,8 +74,9 @@ class NetPEA:
         print('{:}: merge result of all cells and save to file'.format(datetime.now()))
         all_cell_zscore_df = pd.concat(df_list, axis=0)
         zscore_fname = self.out_path
-        all_cell_zscore_df.to_csv(zscore_fname, header=True, index=True, sep="\t")
+        #all_cell_zscore_df.to_csv(zscore_fname, header=True, index=True, sep="\t")
         #print(all_cell_zscore_df)
+        return all_cell_zscore_df
 
 
     def netpea(self, rwrDf, pathwayDictList):
