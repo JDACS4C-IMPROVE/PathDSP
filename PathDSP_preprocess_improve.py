@@ -37,8 +37,10 @@ def check_smiles_RDKit(smile_df, col_name):
             bad_smiles[idx] = row['smile']
         else:
             good_smiles[idx] = row['smile']
-    bad_smiles = pd.DataFrame.from_dict(bad_smiles, orient='index', columns=[col_name])
-    good_smiles = pd.DataFrame.from_dict(good_smiles, orient='index', columns=[col_name])
+    bad_smiles = pd.DataFrame.from_dict(bad_smiles, orient='index', columns=['smile'])
+    good_smiles = pd.DataFrame.from_dict(good_smiles, orient='index', columns=['smile'])
+    bad_smiles.index.name = col_name
+    good_smiles.index.name = col_name
     print("bad smiles:", bad_smiles)
     print("good smiles:", good_smiles)
     return bad_smiles, good_smiles
