@@ -22,13 +22,13 @@ class NetPEA:
     :param seed:
     :param threshold:
     """
-    def __init__(self, rwrPath, pathwayGMT, log_transform=False, permutation=1000, seed=42, n_cpu=5, out_path='./'):
+    def __init__(self, rwrPath, pathwayGMT, log_transform=False, permutation=1000, seed=42, n_cpu=5):
         # load data
         self.rwr_path = rwrPath #pd.read_csv(rwrDf, header=0, index_col=0, sep="\t")
         self.pathway_gmt = pathwayGMT
         self.permutation = int(permutation)
         self.seed = int(seed)
-        self.out_path = out_path
+        #self.out_path = out_path
 
         # settings
         np.random.seed(self.seed)
@@ -207,7 +207,7 @@ if __name__ == "__main__":
     rwr_df = 'test.txt' #'/repo4/ytang4/PHD/db/GDSC/processed/GDSC.MUTCNV.STRING.RWR.txt'
     pathway_gmt = '/repo4/ytang4/PHD/db/MSigdb/c2.cp.pid.v7.1.symbols.gmt'
     # initiate
-    cell_pathway_df = NetPEA(rwr_df, pathway_gmt, permutation=3, seed=42, n_cpu=5, out_path='./test_netpea/GDSC')
+    #cell_pathway_df = NetPEA(rwr_df, pathway_gmt, permutation=3, seed=42, n_cpu=5, out_path='./test_netpea/GDSC')
     spend = datetime.strptime(str(datetime.now()), datetimeFormat) - datetime.strptime(str(start_time),datetimeFormat)
     print( '[Finished in {:}]'.format(spend) )
 

@@ -90,31 +90,6 @@ def times_expression(rwr, exp):
 
 
 
-def run_random_walk(params, exp_df, restart_path, out_path, multiply_expression):
-    ppi_path = params["input_supp_data_dir"] + "/STRING/9606.protein_name.links.v11.0.pkl"
-    pathway_path = (params["input_supp_data_dir"] + "/MSigdb/union.c2.cp.pid.reactome.v7.2.symbols.gmt")
-    # Perform random walk with restart
-    rwr_df = rwr.RWR(
-        ppi_path,
-        restart_path,
-        restartProbFloat=0.5,
-        convergenceFloat=0.00001,
-        normalize="l1",
-        weighted=True).get_prob()
-    # multiply with gene expression
-    if multiply_expression:
-        rwr_df = times_expression(rwr_df, exp_df)
-    # perform Pathway Enrichment Analysis
-    cell_pathway_df = pea.NetPEA(
-        rwr_df,
-        pathway_path,
-        log_transform=False,
-        permutation=params["permutation_int"],
-        seed=params['seed_int'],
-        n_cpu=params['cpu_int'],
-        out_path=out_path).netpea_parallel()
-    return cell_pathway_df
-
 def run_ssgsea(params, expMat, response_df):
     expMat = expMat.loc[expMat.index.isin(response_df[params['canc_col_name']]),]
     gct = expMat.T  # gene (rows) cell lines (columns)
@@ -154,6 +129,8 @@ def run_ssgsea(params, expMat, response_df):
 
 
 def run(params):
+    ppi_path = params["input_supp_data_dir"] + "/STRING/9606.protein_name.links.v11.0.pkl"
+    pathway_path = (params["input_supp_data_dir"] + "/MSigdb/union.c2.cp.pid.reactome.v7.2.symbols.gmt")
     for i in ["drug_bits_file", "dgnet_file", "mutnet_file", "cnvnet_file", "exp_file",]:
         params[i] = params["output_dir"] + "/" + params[i]
     response_dfs = []
@@ -187,7 +164,22 @@ def run(params):
     combined_df = pd.merge(drug_info, target_info, how="left", on="NAME").dropna(subset=["gene"])
     combined_df = combined_df.loc[combined_df[params['drug_col_name']].isin(response_df[params['drug_col_name']]),]
     combined_df.iloc[:, -2:].to_csv(params["output_dir"] + "/drug_target.txt", sep="\t", header=True, index=False)
-    DGnet = run_random_walk(params, exp_df, restart_path=params["output_dir"] + "/drug_target.txt", out_path=params["dgnet_file"], multiply_expression=False)
+    # Perform random walk with restart
+    DGnet_rwr_df = rwr.RWR(
+        ppiPathStr=ppi_path,
+        restartPathStr=params["output_dir"] + "/drug_target.txt",
+        restartProbFloat=0.5,
+        convergenceFloat=0.00001,
+        normalize="l1",
+        weighted=True).get_prob()
+    DGnet_rwr_df.to_csv("DGnet_rwr_df.tsv", sep='\t')
+    DGnet = pea.NetPEA(
+        rwrPath=DGnet_rwr_df,
+        pathwayGMT=pathway_path,
+        log_transform=False,
+        permutation=params["permutation_int"],
+        seed=params['seed_int'],
+        n_cpu=params['cpu_int']).netpea_parallel()
     print("...finished DGnet.")
 
     print("Compute MUTnet...")
@@ -195,7 +187,23 @@ def run(params):
     mutation_data = pd.melt(mutation_data, id_vars=params['canc_col_name']).loc[lambda x: x["value"] > 0]
     mutation_data = mutation_data.loc[mutation_data[params['canc_col_name']].isin(response_df[params['canc_col_name']]),]
     mutation_data.iloc[:, 0:2].to_csv(params["output_dir"] + "/mutation_data.txt", sep="\t", header=True, index=False)
-    MUTnet = run_random_walk(params, exp_df, restart_path=params["output_dir"] + "/mutation_data.txt", out_path=params["mutnet_file"], multiply_expression=True)
+    MUTnet_rwr_df = rwr.RWR(
+        ppiPathStr=ppi_path,
+        restartPathStr=params["output_dir"] + "/drug_target.txt",
+        restartProbFloat=0.5,
+        convergenceFloat=0.00001,
+        normalize="l1",
+        weighted=True).get_prob()
+    MUTnet_rwr_df.to_csv("MUTnet_rwr_df.tsv", sep='\t')
+    # multiply with gene expression
+    MUTnet_rwr_df = times_expression(MUTnet_rwr_df, exp_df)
+    MUTnet = pea.NetPEA(
+        rwrPath=MUTnet_rwr_df,
+        pathwayGMT=pathway_path,
+        log_transform=False,
+        permutation=params["permutation_int"],
+        seed=params['seed_int'],
+        n_cpu=params['cpu_int']).netpea_parallel()
     print("...finished MUTnet.")    
     
     print("Compute CNVnet...")
@@ -204,7 +212,22 @@ def run(params):
     cnv_data = cnv_data.loc[cnv_data[params['canc_col_name']].isin(response_df[params['canc_col_name']]),]
     restart_path = params["output_dir"] + "/cnv_data.txt"
     cnv_data.iloc[:, 0:2].to_csv(params["output_dir"] + "/cnv_data.txt", sep="\t", header=True, index=False)
-    CNVnet = run_random_walk(params, exp_df, restart_path=params["output_dir"] + "/cnv_data.txt", out_path=params["cnvnet_file"], multiply_expression=True)
+    CNVnet_rwr_df = rwr.RWR(
+        ppiPathStr=ppi_path,
+        restartPathStr=params["output_dir"] + "/drug_target.txt",
+        restartProbFloat=0.5,
+        convergenceFloat=0.00001,
+        normalize="l1",
+        weighted=True).get_prob()
+    # multiply with gene expression
+    CNVnet_rwr_df = times_expression(CNVnet_rwr_df, exp_df)
+    CNVnet = pea.NetPEA(
+        rwrPath=CNVnet_rwr_df,
+        pathwayGMT=pathway_path,
+        log_transform=False,
+        permutation=params["permutation_int"],
+        seed=params['seed_int'],
+        n_cpu=params['cpu_int']).netpea_parallel()
     print("...finished CNVnet.") 
 
     print("run_ssgsea - compute EXP.")
