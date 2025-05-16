@@ -14,7 +14,6 @@ import polars as pl
 from improvelib.applications.drug_response_prediction.config import DRPTrainConfig #NCK
 import improvelib.utils as frm #NCK
 
-from PathDSP_preprocess_improve import cal_time
 from model_params_def import pathdsp_train_params
 
 file_path = os.path.dirname(os.path.realpath(__file__))
@@ -103,13 +102,7 @@ def r2_score(y_true, y_pred):
     r2 = 1 - ss_res / ss_tot
     return r2
 
-def cal_time(end, start):
-    '''return time spent'''
-    # end = datetime.now(), start = datetime.now()
-    datetimeFormat = '%Y-%m-%d %H:%M:%S.%f'
-    spend = datetime.strptime(str(end), datetimeFormat) - \
-            datetime.strptime(str(start),datetimeFormat)
-    return spend
+
 
 
 def fit(net, train_dl, valid_dl, epochs, learning_rate, device, opt_fn, params):
@@ -156,7 +149,7 @@ def fit(net, train_dl, valid_dl, epochs, learning_rate, device, opt_fn, params):
         # calculate total loss of all batches
         avg_train_loss = train_epoch_loss / len(train_dl)
         trainloss_list.append( avg_train_loss )
-        print('epoch ' + str(epoch) + ' :[Finished in {:}]'.format(cal_time(datetime.now(), start)))
+        print('epoch ' + str(epoch))
         ## validation phase
         with tch.no_grad():
             net.eval()
@@ -190,7 +183,6 @@ def fit(net, train_dl, valid_dl, epochs, learning_rate, device, opt_fn, params):
             print("Early stopping")
             break
     
-    print('Total time (all epochs) :[Finished in {:}]'.format(cal_time(datetime.now(), start_total)))
     # load the last checkpoint with the best model
     net.load_state_dict(tch.load(params["output_dir"] + '/checkpoint.pt'))
 
@@ -324,6 +316,4 @@ def main(args):
 
 
 if __name__ == "__main__":
-    start = datetime.now()
     main(sys.argv[1:])
-    print("[Training finished in {:}]".format(cal_time(datetime.now(), start)))

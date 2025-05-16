@@ -157,6 +157,7 @@ def run(params):
     print("...finished drug to bits.")
 
     print("Compute DGnet...")
+    print("DGnet - prep data...")
     drug_info = pd.read_csv(params["input_dir"] + "/x_data/drug_info.tsv", sep="\t")
     drug_info["NAME"] = drug_info["NAME"].str.upper()
     target_info = pd.read_csv(params["input_supp_data_dir"] + "/data/DB.Drug.Target.txt", sep="\t")
@@ -164,7 +165,7 @@ def run(params):
     combined_df = pd.merge(drug_info, target_info, how="left", on="NAME").dropna(subset=["gene"])
     combined_df = combined_df.loc[combined_df[params['drug_col_name']].isin(response_df[params['drug_col_name']]),]
     combined_df.iloc[:, -2:].to_csv(params["output_dir"] + "/drug_target.txt", sep="\t", header=True, index=False)
-    # Perform random walk with restart
+    print("DGnet - random walk with restart...")
     DGnet_rwr_df = rwr.RWR(
         ppiPathStr=ppi_path,
         restartPathStr=params["output_dir"] + "/drug_target.txt",
@@ -173,6 +174,7 @@ def run(params):
         normalize="l1",
         weighted=True).get_prob()
     DGnet_rwr_df.to_csv("DGnet_rwr_df.tsv", sep='\t')
+    print("DGnet - NetPEA...")
     DGnet = pea.NetPEA(
         rwrPath=DGnet_rwr_df,
         pathwayGMT=pathway_path,
@@ -184,9 +186,11 @@ def run(params):
 
     print("Compute MUTnet...")
     #mutation_data = mutation_data.reset_index()
+    print("MUTnet - prep data...")
     mutation_data = pd.melt(mutation_data, id_vars=params['canc_col_name']).loc[lambda x: x["value"] > 0]
     mutation_data = mutation_data.loc[mutation_data[params['canc_col_name']].isin(response_df[params['canc_col_name']]),]
     mutation_data.iloc[:, 0:2].to_csv(params["output_dir"] + "/mutation_data.txt", sep="\t", header=True, index=False)
+    print("MUTnet - random walk with restart...")
     MUTnet_rwr_df = rwr.RWR(
         ppiPathStr=ppi_path,
         restartPathStr=params["output_dir"] + "/mutation_data.txt",
@@ -196,7 +200,9 @@ def run(params):
         weighted=True).get_prob()
     MUTnet_rwr_df.to_csv("MUTnet_rwr_df.tsv", sep='\t')
     # multiply with gene expression
+    print("MUTnet - multiply by expression...")
     MUTnet_rwr_df = times_expression(MUTnet_rwr_df, exp_df)
+    print("MUTnet - NetPEA...")
     MUTnet = pea.NetPEA(
         rwrPath=MUTnet_rwr_df,
         pathwayGMT=pathway_path,
