@@ -269,7 +269,7 @@ def run(params):
     print("length of unique CNVnet:", len(CNVnet[params['canc_col_name']].unique()))
     print("length of unique MUTnet:", len(MUTnet[params['canc_col_name']].unique()))
     print("length of unique EXP:", len(EXP[params['canc_col_name']].unique()))
-    print("length of unique response_df:", len(response_df[params['canc_col_name']]))
+    print("length of unique response_df:", len(response_df[params['canc_col_name']].unique()))
     common_sample_ids = reduce(np.intersect1d, (CNVnet[params['canc_col_name']],
                                                 MUTnet[params['canc_col_name']],
                                                 EXP[params['canc_col_name']],
