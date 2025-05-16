@@ -189,7 +189,7 @@ def run(params):
     mutation_data.iloc[:, 0:2].to_csv(params["output_dir"] + "/mutation_data.txt", sep="\t", header=True, index=False)
     MUTnet_rwr_df = rwr.RWR(
         ppiPathStr=ppi_path,
-        restartPathStr=params["output_dir"] + "/drug_target.txt",
+        restartPathStr=params["output_dir"] + "/mutation_data.txt",
         restartProbFloat=0.5,
         convergenceFloat=0.00001,
         normalize="l1",
@@ -214,7 +214,7 @@ def run(params):
     cnv_data.iloc[:, 0:2].to_csv(params["output_dir"] + "/cnv_data.txt", sep="\t", header=True, index=False)
     CNVnet_rwr_df = rwr.RWR(
         ppiPathStr=ppi_path,
-        restartPathStr=params["output_dir"] + "/drug_target.txt",
+        restartPathStr=params["output_dir"] + "/cnv_data.txt",
         restartProbFloat=0.5,
         convergenceFloat=0.00001,
         normalize="l1",
