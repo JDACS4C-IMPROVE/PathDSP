@@ -246,8 +246,8 @@ def run(params):
         response_df = drp.DrugResponseLoader(params, split_file=params[i+"_split_file"], verbose=True)
         response_df = response_df.dfs['response.tsv']
         response_df = response_df.loc[(response_df[params['drug_col_name']].isin(common_drug_ids)) & (response_df[params['canc_col_name']].isin(common_sample_ids)),:]
-        comb_data_mtx = response_df[[params['drug_col_name'], params['canc_col_name'], 'exp_id', params['y_col_name']]]
-        comb_data_mtx = (comb_data_mtx.set_index([params['drug_col_name'], params['canc_col_name'], "exp_id", params['y_col_name']]).join(drug_data, on=params['drug_col_name']).join(sample_data, on=params['canc_col_name']))
+        comb_data_mtx = response_df[[params['drug_col_name'], params['canc_col_name'], params['y_col_name']]]
+        comb_data_mtx = (comb_data_mtx.set_index([params['drug_col_name'], params['canc_col_name'], params['y_col_name']]).join(drug_data, on=params['drug_col_name']).join(sample_data, on=params['canc_col_name']))
         ss = StandardScaler()
         comb_data_mtx.iloc[:,params["bit_int"]:comb_data_mtx.shape[1]] = ss.fit_transform(comb_data_mtx.iloc[:,params["bit_int"]:comb_data_mtx.shape[1]])
         ## add 0.01 to avoid possible inf values
