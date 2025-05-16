@@ -255,7 +255,21 @@ def run(params):
     #EXP = pd.read_csv(params["exp_file"], sep="\t", index_col=0)
     EXP = EXP.add_suffix("_exp").reset_index().rename(columns={"index": params['canc_col_name']})
     # Extract common IDs
+    print("length of drug_mbit_df:", len(drug_mbit_df[params['drug_col_name']]))
+    print("length of DGnet:", len(DGnet[params['drug_col_name']]))
+    print("length of response_df:", len(response_df[params['drug_col_name']]))
+    print("length of unique drug_mbit_df:", len(drug_mbit_df[params['drug_col_name']].unique()))
+    print("length of unique DGnet:", len(DGnet[params['drug_col_name']].unique()))
+    print("length of unique response_df:", len(response_df[params['drug_col_name']].unique()))
     common_drug_ids = reduce(np.intersect1d, (drug_mbit_df[params['drug_col_name']], DGnet[params['drug_col_name']], response_df[params['drug_col_name']]))
+    print("length of CNVnet:", len(CNVnet[params['canc_col_name']]))
+    print("length of MUTnet:", len(MUTnet[params['canc_col_name']]))
+    print("length of EXP:", len(EXP[params['canc_col_name']]))
+    print("length of response_df:", len(response_df[params['canc_col_name']]))
+    print("length of unique CNVnet:", len(CNVnet[params['canc_col_name']].unique()))
+    print("length of unique MUTnet:", len(MUTnet[params['canc_col_name']].unique()))
+    print("length of unique EXP:", len(EXP[params['canc_col_name']].unique()))
+    print("length of unique response_df:", len(response_df[params['canc_col_name']]))
     common_sample_ids = reduce(np.intersect1d, (CNVnet[params['canc_col_name']],
                                                 MUTnet[params['canc_col_name']],
                                                 EXP[params['canc_col_name']],
