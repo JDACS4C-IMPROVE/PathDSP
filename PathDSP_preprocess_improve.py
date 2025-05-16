@@ -112,7 +112,7 @@ def run_random_walk(params, exp_df, restart_path, out_path, multiply_expression)
         permutation=params["permutation_int"],
         seed=params['seed_int'],
         n_cpu=params['cpu_int'],
-        out_path=out_path,)
+        out_path=out_path).netpea_parallel()
     return cell_pathway_df
 
 def run_ssgsea(params, expMat, response_df):

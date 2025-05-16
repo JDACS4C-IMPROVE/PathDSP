@@ -56,15 +56,15 @@ class NetPEA:
         self.pathwayDictList = [pathway_geneList_dict, pathway_shareGeneList_dict, pathway_randomGeneListList_dict]
 
         # call function
-        self.netpea_parallel(self.rwrDf, self.pathwayDictList, self.n_cpu, self.out_path)
+        #self.netpea_parallel(self.rwrDf, self.pathwayDictList, self.n_cpu, self.out_path)
 
-    def netpea_parallel(self, rwrDf, pathwayDictList, n_cpu, out_path):
+    def netpea_parallel(self):
         # split dataframe
-        n_partitions = int(n_cpu)
-        split_list = np.array_split(rwrDf, n_partitions)
+        n_partitions = int(self.n_cpu)
+        split_list = np.array_split(self.rwrDf, n_partitions)
         # parallel computing
-        pool = mp.Pool(int(n_cpu))
-        df_list =  pool.starmap(self.netpea, [(df, pathwayDictList) for df in split_list])
+        pool = mp.Pool(int(self.n_cpu))
+        df_list =  pool.starmap(self.netpea, [(df, self.pathwayDictList) for df in split_list])
         pool.close()
         pool.join()
         print('{:}: comple {:} dfs'.format(datetime.now(), len(df_list)))
@@ -73,7 +73,7 @@ class NetPEA:
         # merge result of all cells and save to file
         print('{:}: merge result of all cells and save to file'.format(datetime.now()))
         all_cell_zscore_df = pd.concat(df_list, axis=0)
-        zscore_fname = self.out_path
+        #zscore_fname = self.out_path
         #all_cell_zscore_df.to_csv(zscore_fname, header=True, index=True, sep="\t")
         #print(all_cell_zscore_df)
         return all_cell_zscore_df
