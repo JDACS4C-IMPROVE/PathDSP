@@ -275,7 +275,9 @@ def run(params):
                                                 EXP[params['canc_col_name']],
                                                 response_df[params['canc_col_name']]))
     # Subset to common IDs
+    print("response before subset shape:", response_df.shape)
     response_df = response_df.loc[(response_df[params['drug_col_name']].isin(common_drug_ids)) & (response_df[params['canc_col_name']].isin(common_sample_ids)), :]
+    print("response after subset shape:", response_df.shape)
     drug_mbit_df = drug_mbit_df.loc[drug_mbit_df[params['drug_col_name']].isin(common_drug_ids), :].set_index(params['drug_col_name']).sort_index()
     DGnet = DGnet.loc[DGnet[params['drug_col_name']].isin(common_drug_ids), :].set_index(params['drug_col_name']).sort_index()
     CNVnet = CNVnet.loc[CNVnet[params['canc_col_name']].isin(common_sample_ids), :].set_index(params['canc_col_name']).sort_index()
