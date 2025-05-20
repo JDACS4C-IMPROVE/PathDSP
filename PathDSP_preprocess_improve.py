@@ -138,7 +138,7 @@ def run(params):
     ge = drp.get_x_data(file = params['cell_transcriptomic_file'], 
                         benchmark_dir = params['input_dir'], 
                         column_name = params['canc_col_name'])
-
+    ge = ge.reset_index()
     # ------------------------------------------------------
     # [Req] Validity check of feature representations
     # ------------------------------------------------------
@@ -186,6 +186,7 @@ def run(params):
     print("Compute MUTnet...")
     #mutation_data = mutation_data.reset_index()
     print("MUTnet - prep data...")
+    mut = mut.reset_index()
     mut = pd.melt(mut, id_vars=params['canc_col_name']).loc[lambda x: x["value"] > 0]
     mut = mut.loc[mut[params['canc_col_name']].isin(response_all[params['canc_col_name']]),]
     mut.iloc[:, 0:2].to_csv(params["output_dir"] + "/mutation_data.txt", sep="\t", header=True, index=False)
@@ -212,7 +213,7 @@ def run(params):
     print("...finished MUTnet.")    
     
     print("Compute CNVnet...")
-    #cnv_data = cnv_data.reset_index()
+    cnv = cnv.reset_index()
     cnv = pd.melt(cnv, id_vars=params['canc_col_name']).loc[lambda x: x["value"] != 0]
     cnv = cnv.loc[cnv[params['canc_col_name']].isin(response_all[params['canc_col_name']]),]
     restart_path = params["output_dir"] + "/cnv_data.txt"
