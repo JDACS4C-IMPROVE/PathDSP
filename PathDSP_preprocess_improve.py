@@ -138,7 +138,7 @@ def run(params):
     ge = drp.get_x_data(file = params['cell_transcriptomic_file'], 
                         benchmark_dir = params['input_dir'], 
                         column_name = params['canc_col_name'])
-    ge = ge.reset_index()
+    
     # ------------------------------------------------------
     # [Req] Validity check of feature representations
     # ------------------------------------------------------
@@ -237,7 +237,7 @@ def run(params):
     print("...finished CNVnet.") 
 
     print("run_ssgsea - compute EXP.")
-
+    ge = ge.reset_index()
     EXP = run_ssgsea(params, ge, response_all)
 
     print("prepare final input file.")
