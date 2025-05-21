@@ -259,7 +259,7 @@ def run(params):
     print("length of unique drug_mbit_df:", len(drug_mbit_df[params['drug_col_name']].unique()))
     print("length of unique DGnet:", len(DGnet[params['drug_col_name']].unique()))
     print("length of unique response_df:", len(response_all[params['drug_col_name']].unique()))
-    common_drug_ids = reduce(np.intersect1d, (drug_mbit_df[params['drug_col_name']], DGnet[params['drug_col_name']], response_df[params['drug_col_name']]))
+    common_drug_ids = reduce(np.intersect1d, (drug_mbit_df[params['drug_col_name']], DGnet[params['drug_col_name']], response_all[params['drug_col_name']]))
     print("length of CNVnet:", len(CNVnet[params['canc_col_name']]))
     print("length of MUTnet:", len(MUTnet[params['canc_col_name']]))
     print("length of EXP:", len(EXP[params['canc_col_name']]))
