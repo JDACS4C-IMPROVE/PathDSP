@@ -237,7 +237,6 @@ def run(params):
     print("...finished CNVnet.") 
 
     print("run_ssgsea - compute EXP.")
-    ge = ge.reset_index()
     EXP = run_ssgsea(params, ge, response_all)
 
     print("prepare final input file.")
@@ -293,7 +292,6 @@ def run(params):
         response_df = drp.get_response_data(split_file=split_file, 
                                 benchmark_dir=params['input_dir'], 
                                 response_file=params['y_data_file'])
-        response_df = response_df.dfs['response.tsv']
         response_df = response_df.loc[(response_df[params['drug_col_name']].isin(common_drug_ids)) & (response_df[params['canc_col_name']].isin(common_sample_ids)),:]
         comb_data_mtx = response_df[[params['drug_col_name'], params['canc_col_name'], params['y_col_name']]]
         comb_data_mtx = (comb_data_mtx.set_index([params['drug_col_name'], params['canc_col_name'], params['y_col_name']]).join(drug_data, on=params['drug_col_name']).join(sample_data, on=params['canc_col_name']))
