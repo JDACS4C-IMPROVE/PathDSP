@@ -185,7 +185,7 @@ def run(params):
         print("DGnet - prep data...")
 
         #combined_df = combined_df.loc[combined_df[params['drug_col_name']].isin(response_all[params['drug_col_name']]),]
-        targets_stage.to_csv(params["output_dir"] + "/drug_target.txt", sep="\t", header=True, index=False)
+        targets_stage.to_csv(params["output_dir"] + "/drug_target.txt", sep="\t", header=True, index=True)
         print("DGnet - random walk with restart...")
         DGnet_rwr_df = rwr.RWR(
             ppiPathStr=ppi_path,
