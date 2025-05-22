@@ -11,12 +11,9 @@ import model_utils.myDataloader as mydl
 import model_utils.myUtility as myutil
 
 
-from PathDSP_train_improve import (
-    predicting,
-    cal_time,
-)
-from improvelib.applications.drug_response_prediction.config import DRPInferConfig #NCK
-import improvelib.utils as frm #NCK
+from PathDSP_train_improve import predicting
+from improvelib.applications.drug_response_prediction.config import DRPInferConfig 
+import improvelib.utils as frm 
 from model_params_def import pathdsp_infer_params
 
 file_path = os.path.dirname(os.path.realpath(__file__))
@@ -68,7 +65,6 @@ def run(params):
             output_dir=params["output_dir"]
         )
 
-    print('Inference time :[Finished in {:}]'.format(cal_time(datetime.now(), start)))
     return True
 
 def main(args):

@@ -45,7 +45,7 @@ def smile2bits(params, smile_df):
     colname_list = [params['drug_col_name']] + ["mBit_" + str(i) for i in range(params['bit_int'])]
     drug_mbit_df = pd.DataFrame.from_records(record_list, columns=colname_list)
     # save to file
-    #drug_mbit_df.to_csv(params["drug_bits_file"], header=True, index=False, sep="\t")
+    drug_mbit_df.to_csv(params["drug_bits_file"], header=True, index=False, sep="\t")
     return drug_mbit_df
 
 
