@@ -144,165 +144,171 @@ def run(params):
     # ------------------------------------------------------
     smiles = check_smiles_RDKit(smiles)
 
-    response_all = drp.get_all_response_data(train_split_file=params["train_split_file"],
-                                             val_split_file=params["val_split_file"],
-                                             test_split_file=params["test_split_file"], 
-                                             benchmark_dir=params['input_dir'], 
-                                             response_file=params['y_data_file'])
-
-
-
-    print("Convert drug to bits...")
-    drug_mbit_df = smile2bits(params, smiles)
-    print("...finished drug to bits.")
-
-    print("Compute DGnet...")
-    print("DGnet - prep data...")
     drug_info = pd.read_csv(params["input_dir"] + "/x_data/drug_info.tsv", sep="\t")
     drug_info["NAME"] = drug_info["NAME"].str.upper()
     target_info = pd.read_csv(params["input_supp_data_dir"] + "/data/DB.Drug.Target.txt", sep="\t")
     target_info = target_info.rename(columns={"drug": "NAME"})
-    combined_df = pd.merge(drug_info, target_info, how="left", on="NAME").dropna(subset=["gene"])
-    combined_df = combined_df.loc[combined_df[params['drug_col_name']].isin(response_all[params['drug_col_name']]),]
-    combined_df.iloc[:, -2:].to_csv(params["output_dir"] + "/drug_target.txt", sep="\t", header=True, index=False)
-    print("DGnet - random walk with restart...")
-    DGnet_rwr_df = rwr.RWR(
-        ppiPathStr=ppi_path,
-        restartPathStr=params["output_dir"] + "/drug_target.txt",
-        restartProbFloat=0.5,
-        convergenceFloat=0.00001,
-        normalize="l1",
-        weighted=True).get_prob()
-    print("DGnet - NetPEA...")
-    DGnet = pea.NetPEA(
-        rwrPath=DGnet_rwr_df,
-        pathwayGMT=pathway_path,
-        log_transform=False,
-        permutation=params["permutation_int"],
-        seed=params['seed_int'],
-        n_cpu=params['cpu_int']).netpea_parallel()
-    print("...finished DGnet.")
+    targets = pd.merge(drug_info, target_info, how="left", on="NAME").dropna(subset=["gene"])
+    targets = targets[[params['drug_col_name'], 'gene']]
 
-    print("Compute MUTnet...")
-    #mutation_data = mutation_data.reset_index()
-    print("MUTnet - prep data...")
-    mut = mut.reset_index()
-    mut = pd.melt(mut, id_vars=params['canc_col_name']).loc[lambda x: x["value"] > 0]
-    mut = mut.loc[mut[params['canc_col_name']].isin(response_all[params['canc_col_name']]),]
-    mut.iloc[:, 0:2].to_csv(params["output_dir"] + "/mutation_data.txt", sep="\t", header=True, index=False)
-    print("MUTnet - random walk with restart...")
-    MUTnet_rwr_df = rwr.RWR(
-        ppiPathStr=ppi_path,
-        restartPathStr=params["output_dir"] + "/mutation_data.txt",
-        restartProbFloat=0.5,
-        convergenceFloat=0.00001,
-        normalize="l1",
-        weighted=True).get_prob()
-    MUTnet_rwr_df.to_csv("MUTnet_rwr_df.tsv", sep='\t')
-    # multiply with gene expression
-    print("MUTnet - multiply by expression...")
-    MUTnet_rwr_df = times_expression(MUTnet_rwr_df, ge)
-    print("MUTnet - NetPEA...")
-    MUTnet = pea.NetPEA(
-        rwrPath=MUTnet_rwr_df,
-        pathwayGMT=pathway_path,
-        log_transform=False,
-        permutation=params["permutation_int"],
-        seed=params['seed_int'],
-        n_cpu=params['cpu_int']).netpea_parallel()
-    print("...finished MUTnet.")    
-    
-    print("Compute CNVnet...")
-    cnv = cnv.reset_index()
-    cnv = pd.melt(cnv, id_vars=params['canc_col_name']).loc[lambda x: x["value"] != 0]
-    cnv = cnv.loc[cnv[params['canc_col_name']].isin(response_all[params['canc_col_name']]),]
-    restart_path = params["output_dir"] + "/cnv_data.txt"
-    cnv.iloc[:, 0:2].to_csv(params["output_dir"] + "/cnv_data.txt", sep="\t", header=True, index=False)
-    CNVnet_rwr_df = rwr.RWR(
-        ppiPathStr=ppi_path,
-        restartPathStr=params["output_dir"] + "/cnv_data.txt",
-        restartProbFloat=0.5,
-        convergenceFloat=0.00001,
-        normalize="l1",
-        weighted=True).get_prob()
-    # multiply with gene expression
-    CNVnet_rwr_df = times_expression(CNVnet_rwr_df, ge)
-    CNVnet = pea.NetPEA(
-        rwrPath=CNVnet_rwr_df,
-        pathwayGMT=pathway_path,
-        log_transform=False,
-        permutation=params["permutation_int"],
-        seed=params['seed_int'],
-        n_cpu=params['cpu_int']).netpea_parallel()
-    print("...finished CNVnet.") 
 
-    print("run_ssgsea - compute EXP.")
-    EXP = run_ssgsea(params, ge, response_all)
 
-    print("prepare final input file.")
-    # Read data files and rename ID columns
-    #drug_mbit_df = pd.read_csv(params["drug_bits_file"], sep="\t", index_col=0)
-    #drug_mbit_df = drug_mbit_df.reset_index()
-    #DGnet = pd.read_csv(params["dgnet_file"], sep="\t", index_col=0)
-    DGnet = DGnet.add_suffix("_dgnet").reset_index().rename(columns={"index": params['drug_col_name']})
-    #CNVnet = pd.read_csv(params["cnvnet_file"], sep="\t", index_col=0)
-    CNVnet = CNVnet.add_suffix("_cnvnet").reset_index().rename(columns={"index": params['canc_col_name']})
-    #MUTnet = pd.read_csv(params["mutnet_file"], sep="\t", index_col=0)
-    MUTnet = MUTnet.add_suffix("_mutnet").reset_index().rename(columns={"index": params['canc_col_name']})
-    #EXP = pd.read_csv(params["exp_file"], sep="\t", index_col=0)
-    EXP = EXP.add_suffix("_exp").reset_index().rename(columns={"index": params['canc_col_name']})
-    # Extract common IDs
-    print("length of drug_mbit_df:", len(drug_mbit_df[params['drug_col_name']]))
-    print("length of DGnet:", len(DGnet[params['drug_col_name']]))
-    print("length of response_df:", len(response_all[params['drug_col_name']]))
-    print("length of unique drug_mbit_df:", len(drug_mbit_df[params['drug_col_name']].unique()))
-    print("length of unique DGnet:", len(DGnet[params['drug_col_name']].unique()))
-    print("length of unique response_df:", len(response_all[params['drug_col_name']].unique()))
-    common_drug_ids = reduce(np.intersect1d, (drug_mbit_df[params['drug_col_name']], DGnet[params['drug_col_name']], response_all[params['drug_col_name']]))
-    print("length of CNVnet:", len(CNVnet[params['canc_col_name']]))
-    print("length of MUTnet:", len(MUTnet[params['canc_col_name']]))
-    print("length of EXP:", len(EXP[params['canc_col_name']]))
-    print("length of response_df:", len(response_all[params['canc_col_name']]))
-    print("length of unique CNVnet:", len(CNVnet[params['canc_col_name']].unique()))
-    print("length of unique MUTnet:", len(MUTnet[params['canc_col_name']].unique()))
-    print("length of unique EXP:", len(EXP[params['canc_col_name']].unique()))
-    print("length of unique response_df:", len(response_all[params['canc_col_name']].unique()))
-    common_sample_ids = reduce(np.intersect1d, (CNVnet[params['canc_col_name']],
-                                                MUTnet[params['canc_col_name']],
-                                                EXP[params['canc_col_name']],
-                                                response_all[params['canc_col_name']]))
-    # Subset to common IDs
-    print("response before subset shape:", response_all.shape)
-    response_all = response_all.loc[(response_all[params['drug_col_name']].isin(common_drug_ids)) & (response_all[params['canc_col_name']].isin(common_sample_ids)), :]
-    print("response after subset shape:", response_all.shape)
-    drug_mbit_df = drug_mbit_df.loc[drug_mbit_df[params['drug_col_name']].isin(common_drug_ids), :].set_index(params['drug_col_name']).sort_index()
-    DGnet = DGnet.loc[DGnet[params['drug_col_name']].isin(common_drug_ids), :].set_index(params['drug_col_name']).sort_index()
-    CNVnet = CNVnet.loc[CNVnet[params['canc_col_name']].isin(common_sample_ids), :].set_index(params['canc_col_name']).sort_index()
-    MUTnet = MUTnet.loc[MUTnet[params['canc_col_name']].isin(common_sample_ids), :].set_index(params['canc_col_name']).sort_index()
-    EXP = EXP.loc[EXP[params['canc_col_name']].isin(common_sample_ids), :].set_index(params['canc_col_name']).sort_index()
-    # Join drug and sample data
-    drug_data = drug_mbit_df.join(DGnet)
-    sample_data = CNVnet.join([MUTnet, EXP])
-    ## export train,val,test set
     stages = {"train": params["train_split_file"],
               "val": params["val_split_file"],
               "test": params["test_split_file"]}
 
     for stage, split_file in stages.items():
-        response_df = drp.get_response_data(split_file=split_file, 
+        print(f"Prepare data for stage {stage}.")
+        print(f"Find intersection of {stage} data.")
+        response_stage = drp.get_response_data(split_file=split_file, 
                                 benchmark_dir=params['input_dir'], 
                                 response_file=params['y_data_file'])
-        response_df = response_df.loc[(response_df[params['drug_col_name']].isin(common_drug_ids)) & (response_df[params['canc_col_name']].isin(common_sample_ids)),:]
-        comb_data_mtx = response_df[[params['drug_col_name'], params['canc_col_name'], params['y_col_name']]]
+        response_stage = drp.get_response_with_features(response_stage, [ge, mut, cnv], params['canc_col_name'])
+        response_stage = drp.get_response_with_features(response_stage, [smiles, targets], params['drug_col_name'])
+        ge_stage = drp.get_features_in_response(ge, response_stage, params['canc_col_name'])
+        mut_stage = drp.get_features_in_response(mut, response_stage, params['canc_col_name'])
+        cnv_stage = drp.get_features_in_response(cnv, response_stage, params['canc_col_name'])
+        smiles_stage = drp.get_features_in_response(smiles, response_stage, params['drug_col_name'])
+        targets_stage = drp.get_features_in_response(targets, response_stage, params['drug_col_name'])
+
+        print("Convert drug to bits...")
+        drug_mbit_df = smile2bits(params, smiles_stage)
+        print("...finished drug to bits.")
+
+        print("Compute DGnet...")
+        print("DGnet - prep data...")
+
+        #combined_df = combined_df.loc[combined_df[params['drug_col_name']].isin(response_all[params['drug_col_name']]),]
+        targets_stage.to_csv(params["output_dir"] + "/drug_target.txt", sep="\t", header=True, index=False)
+        print("DGnet - random walk with restart...")
+        DGnet_rwr_df = rwr.RWR(
+            ppiPathStr=ppi_path,
+            restartPathStr=params["output_dir"] + "/drug_target.txt",
+            restartProbFloat=0.5,
+            convergenceFloat=0.00001,
+            normalize="l1",
+            weighted=True).get_prob()
+        print("DGnet - NetPEA...")
+        DGnet = pea.NetPEA(
+            rwrPath=DGnet_rwr_df,
+            pathwayGMT=pathway_path,
+            log_transform=False,
+            permutation=params["permutation_int"],
+            seed=params['seed_int'],
+            n_cpu=params['cpu_int']).netpea_parallel()
+        print("...finished DGnet.")
+
+        print("Compute MUTnet...")
+        #mutation_data = mutation_data.reset_index()
+        print("MUTnet - prep data...")
+        mut_stage = mut_stage.reset_index()
+        mut_stage = pd.melt(mut_stage, id_vars=params['canc_col_name']).loc[lambda x: x["value"] > 0]
+        mut_stage.iloc[:, 0:2].to_csv(params["output_dir"] + "/mutation_data.txt", sep="\t", header=True, index=False)
+        print("MUTnet - random walk with restart...")
+        MUTnet_rwr_df = rwr.RWR(
+            ppiPathStr=ppi_path,
+            restartPathStr=params["output_dir"] + "/mutation_data.txt",
+            restartProbFloat=0.5,
+            convergenceFloat=0.00001,
+            normalize="l1",
+            weighted=True).get_prob()
+        MUTnet_rwr_df.to_csv("MUTnet_rwr_df.tsv", sep='\t')
+        # multiply with gene expression
+        print("MUTnet - multiply by expression...")
+        MUTnet_rwr_df = times_expression(MUTnet_rwr_df, ge_stage)
+        print("MUTnet - NetPEA...")
+        MUTnet = pea.NetPEA(
+            rwrPath=MUTnet_rwr_df,
+            pathwayGMT=pathway_path,
+            log_transform=False,
+            permutation=params["permutation_int"],
+            seed=params['seed_int'],
+            n_cpu=params['cpu_int']).netpea_parallel()
+        print("...finished MUTnet.")    
+        
+        print("Compute CNVnet...")
+        cnv_stage = cnv_stage.reset_index()
+        cnv_stage = pd.melt(cnv_stage, id_vars=params['canc_col_name']).loc[lambda x: x["value"] != 0]
+        cnv_stage.iloc[:, 0:2].to_csv(params["output_dir"] + "/cnv_data.txt", sep="\t", header=True, index=False)
+        CNVnet_rwr_df = rwr.RWR(
+            ppiPathStr=ppi_path,
+            restartPathStr=params["output_dir"] + "/cnv_data.txt",
+            restartProbFloat=0.5,
+            convergenceFloat=0.00001,
+            normalize="l1",
+            weighted=True).get_prob()
+        # multiply with gene expression
+        CNVnet_rwr_df = times_expression(CNVnet_rwr_df, ge_stage)
+        CNVnet = pea.NetPEA(
+            rwrPath=CNVnet_rwr_df,
+            pathwayGMT=pathway_path,
+            log_transform=False,
+            permutation=params["permutation_int"],
+            seed=params['seed_int'],
+            n_cpu=params['cpu_int']).netpea_parallel()
+        print("...finished CNVnet.") 
+
+        print("run_ssgsea - compute EXP.")
+        EXP = run_ssgsea(params, ge_stage, response_stage)
+
+        print("prepare final input file.")
+        # Read data files and rename ID columns
+        #drug_mbit_df = pd.read_csv(params["drug_bits_file"], sep="\t", index_col=0)
+        #drug_mbit_df = drug_mbit_df.reset_index()
+        #DGnet = pd.read_csv(params["dgnet_file"], sep="\t", index_col=0)
+        DGnet = DGnet.add_suffix("_dgnet").reset_index().rename(columns={"index": params['drug_col_name']})
+        #CNVnet = pd.read_csv(params["cnvnet_file"], sep="\t", index_col=0)
+        CNVnet = CNVnet.add_suffix("_cnvnet").reset_index().rename(columns={"index": params['canc_col_name']})
+        #MUTnet = pd.read_csv(params["mutnet_file"], sep="\t", index_col=0)
+        MUTnet = MUTnet.add_suffix("_mutnet").reset_index().rename(columns={"index": params['canc_col_name']})
+        #EXP = pd.read_csv(params["exp_file"], sep="\t", index_col=0)
+        EXP = EXP.add_suffix("_exp").reset_index().rename(columns={"index": params['canc_col_name']})
+        # Extract common IDs
+        print("length of drug_mbit_df:", len(drug_mbit_df[params['drug_col_name']]))
+        print("length of DGnet:", len(DGnet[params['drug_col_name']]))
+        print("length of response_df:", len(response_stage[params['drug_col_name']]))
+        print("length of unique drug_mbit_df:", len(drug_mbit_df[params['drug_col_name']].unique()))
+        print("length of unique DGnet:", len(DGnet[params['drug_col_name']].unique()))
+        print("length of unique response_df:", len(response_stage[params['drug_col_name']].unique()))
+        common_drug_ids = reduce(np.intersect1d, (drug_mbit_df[params['drug_col_name']], DGnet[params['drug_col_name']], response_stage[params['drug_col_name']]))
+        print("length of CNVnet:", len(CNVnet[params['canc_col_name']]))
+        print("length of MUTnet:", len(MUTnet[params['canc_col_name']]))
+        print("length of EXP:", len(EXP[params['canc_col_name']]))
+        print("length of response_df:", len(response_stage[params['canc_col_name']]))
+        print("length of unique CNVnet:", len(CNVnet[params['canc_col_name']].unique()))
+        print("length of unique MUTnet:", len(MUTnet[params['canc_col_name']].unique()))
+        print("length of unique EXP:", len(EXP[params['canc_col_name']].unique()))
+        print("length of unique response_df:", len(response_stage[params['canc_col_name']].unique()))
+        common_sample_ids = reduce(np.intersect1d, (CNVnet[params['canc_col_name']],
+                                                    MUTnet[params['canc_col_name']],
+                                                    EXP[params['canc_col_name']],
+                                                    response_stage[params['canc_col_name']]))
+        # Subset to common IDs
+        print("response before subset shape:", response_stage.shape)
+        response_stage = response_stage.loc[(response_stage[params['drug_col_name']].isin(common_drug_ids)) & (response_stage[params['canc_col_name']].isin(common_sample_ids)), :]
+        print("response after subset shape:", response_stage.shape)
+        drug_mbit_df = drug_mbit_df.loc[drug_mbit_df[params['drug_col_name']].isin(common_drug_ids), :].set_index(params['drug_col_name']).sort_index()
+        DGnet = DGnet.loc[DGnet[params['drug_col_name']].isin(common_drug_ids), :].set_index(params['drug_col_name']).sort_index()
+        CNVnet = CNVnet.loc[CNVnet[params['canc_col_name']].isin(common_sample_ids), :].set_index(params['canc_col_name']).sort_index()
+        MUTnet = MUTnet.loc[MUTnet[params['canc_col_name']].isin(common_sample_ids), :].set_index(params['canc_col_name']).sort_index()
+        EXP = EXP.loc[EXP[params['canc_col_name']].isin(common_sample_ids), :].set_index(params['canc_col_name']).sort_index()
+        # Join drug and sample data
+        drug_data = drug_mbit_df.join(DGnet)
+        sample_data = CNVnet.join([MUTnet, EXP])
+        ## export train,val,test set
+
+
+        response_stage = response_stage.loc[(response_stage[params['drug_col_name']].isin(common_drug_ids)) & (response_stage[params['canc_col_name']].isin(common_sample_ids)),:]
+        comb_data_mtx = response_stage[[params['drug_col_name'], params['canc_col_name'], params['y_col_name']]]
         comb_data_mtx = (comb_data_mtx.set_index([params['drug_col_name'], params['canc_col_name'], params['y_col_name']]).join(drug_data, on=params['drug_col_name']).join(sample_data, on=params['canc_col_name']))
-        ss = StandardScaler()
+        ss = StandardScaler() ## need to fix this
         comb_data_mtx.iloc[:,params["bit_int"]:comb_data_mtx.shape[1]] = ss.fit_transform(comb_data_mtx.iloc[:,params["bit_int"]:comb_data_mtx.shape[1]])
         ## add 0.01 to avoid possible inf values
-        comb_data_mtx["response"] = np.log10(response_df[params['y_col_name']].values + 0.01)
+        comb_data_mtx["response"] = np.log10(response_stage[params['y_col_name']].values + 0.01)
         comb_data_mtx = comb_data_mtx.dropna()
         ydata = comb_data_mtx['response'].reset_index()
-        frm.save_stage_ydf(ydf=ydata, stage=i, output_dir=params["output_dir"])
-        pl.from_pandas(comb_data_mtx).write_csv(params["output_dir"] + "/" + frm.build_ml_data_file_name(data_format=params["data_format"], stage=i), separator="\t", has_header=True)
+        frm.save_stage_ydf(ydf=ydata, stage=stage, output_dir=params["output_dir"])
+        pl.from_pandas(comb_data_mtx).write_csv(params["output_dir"] + "/" + frm.build_ml_data_file_name(data_format=params["data_format"], stage=stage), separator="\t", has_header=True)
 
 
 
