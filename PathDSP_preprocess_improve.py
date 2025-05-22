@@ -150,6 +150,7 @@ def run(params):
     target_info = target_info.rename(columns={"drug": "NAME"})
     targets = pd.merge(drug_info, target_info, how="left", on="NAME").dropna(subset=["gene"])
     targets = targets[[params['drug_col_name'], 'gene']]
+    targets.set_index(params['drug_col_name'])
 
 
 
@@ -163,8 +164,11 @@ def run(params):
         response_stage = drp.get_response_data(split_file=split_file, 
                                 benchmark_dir=params['input_dir'], 
                                 response_file=params['y_data_file'])
+        print("1", response_stage.shape)
         response_stage = drp.get_response_with_features(response_stage, [ge, mut, cnv], params['canc_col_name'])
+        print("2", response_stage.shape)
         response_stage = drp.get_response_with_features(response_stage, [smiles, targets], params['drug_col_name'])
+        print("3", response_stage.shape)
         ge_stage = drp.get_features_in_response(ge, response_stage, params['canc_col_name'])
         mut_stage = drp.get_features_in_response(mut, response_stage, params['canc_col_name'])
         cnv_stage = drp.get_features_in_response(cnv, response_stage, params['canc_col_name'])
