@@ -169,6 +169,8 @@ def run(params):
         print("2", response_stage.shape)
         response_stage = drp.get_response_with_features(response_stage, [smiles, targets], params['drug_col_name'])
         print("3", response_stage.shape)
+        print("smiles:", smiles)
+        print("targets:", targets)
         ge_stage = drp.get_features_in_response(ge, response_stage, params['canc_col_name'])
         mut_stage = drp.get_features_in_response(mut, response_stage, params['canc_col_name'])
         cnv_stage = drp.get_features_in_response(cnv, response_stage, params['canc_col_name'])
