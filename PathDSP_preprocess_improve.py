@@ -150,7 +150,7 @@ def run(params):
     target_info = target_info.rename(columns={"drug": "NAME"})
     targets = pd.merge(drug_info, target_info, how="left", on="NAME").dropna(subset=["gene"])
     targets = targets[[params['drug_col_name'], 'gene']]
-    targets.set_index(params['drug_col_name'])
+    targets = targets.set_index(params['drug_col_name'])
 
 
 
